@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="Untitled Game"
+run/main_scene="uid://dp7sxe5xl5shk"
 config/features=PackedStringArray("4.4", "Forward Plus")
-config/icon="res://icon.svg"
 
 [editor]
 
