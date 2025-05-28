@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://dp7sxe5xl5shk"]
 
 [ext_resource type="Texture2D" uid="uid://qds250w4tgn6" path="res://level/checkboard.png" id="1_cig4d"]
-[ext_resource type="PackedScene" uid="uid://bbpjbhytogjax" path="res://player/character.tscn" id="2_bc4qa"]
+[ext_resource type="PackedScene" uid="uid://bbpjbhytogjax" path="res://player/player.tscn" id="2_bc4qa"]
 
 [sub_resource type="Environment" id="Environment_pev5d"]
 background_mode = 1

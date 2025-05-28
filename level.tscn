@@ -1,0 +1,119 @@
+[gd_scene load_steps=6 format=3 uid="uid://cfjym1biucj47"]
+
+[ext_resource type="Material" uid="uid://bon2b2rxm03vd" path="res://level/material/ground.tres" id="1_oi3di"]
+[ext_resource type="PackedScene" uid="uid://bbpjbhytogjax" path="res://player/player.tscn" id="1_u52ul"]
+[ext_resource type="Material" uid="uid://cqywqq5qccu5p" path="res://level/material/bridge.tres" id="2_0b4ue"]
+[ext_resource type="PackedScene" uid="uid://b61fcqpngcvxp" path="res://mob/mob.tscn" id="4_0b4ue"]
+
+[sub_resource type="Environment" id="Environment_f2txt"]
+background_mode = 1
+background_color = Color(0.259685, 0.761238, 0.978657, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.768627, 0.690196, 0.643137, 1)
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.172342, 0.516332, 0.690224, 1)
+fog_density = 0.0055
+fog_height = -2.3
+fog_height_density = 0.3537
+
+[node name="Level" type="Node3D"]
+
+[node name="Platform" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -5, -11)
+use_collision = true
+size = Vector3(10, 10, 10)
+material = ExtResource("1_oi3di")
+
+[node name="Floating Platform" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
+use_collision = true
+size = Vector3(10, 0.5, 5)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform8" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1, -30)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform13" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 5, 2)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform9" type="CSGBox3D" parent="."]
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 19, 2, -29)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform10" type="CSGBox3D" parent="."]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 26, 4, -26)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform11" type="CSGBox3D" parent="."]
+transform = Transform3D(0.5, 0, -0.866025, 0, 1, 0, 0.866025, 0, 0.5, 32, 6, -20)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform12" type="CSGBox3D" parent="."]
+transform = Transform3D(-5.96046e-08, 0, -1, 0, 1, 0, 1, 0, -5.96046e-08, 34, 8, -12)
+use_collision = true
+size = Vector3(5, 0.5, 10)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -2)
+use_collision = true
+size = Vector3(5, 0.5, 5)
+material = ExtResource("2_0b4ue")
+
+[node name="Floating Platform3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 0, -16)
+use_collision = true
+size = Vector3(5, 0.5, 5)
+material = ExtResource("2_0b4ue")
+
+[node name="Platform3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, -5, -26)
+use_collision = true
+size = Vector3(10, 10, 10)
+material = ExtResource("1_oi3di")
+
+[node name="Platform2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, -0.5)
+use_collision = true
+size = Vector3(20, 10, 20)
+material = ExtResource("1_oi3di")
+
+[node name="Platform5" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 5, 3.5)
+use_collision = true
+size = Vector3(20, 10, 20)
+material = ExtResource("1_oi3di")
+
+[node name="Platform4" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, -29.5)
+use_collision = true
+size = Vector3(15, 10, 15)
+material = ExtResource("1_oi3di")
+
+[node name="Player" parent="." instance=ExtResource("1_u52ul")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.965926, 0, -0.965926, 0.258819, 0, 10, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_f2txt")
+
+[node name="Mob" parent="." instance=ExtResource("4_0b4ue")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -15)
+
+[editable path="Player"]
