@@ -26,6 +26,8 @@ func take_damage():
 	hurt_sound.play()
 
 	if health == 0:
+		ko_sound.play()
+		
 		set_physics_process(false)
 		gravity_scale = 1.0
 		var direction = player.global_position.direction_to(global_position)
@@ -33,8 +35,6 @@ func take_damage():
 		apply_central_impulse(direction.rotated(Vector3.UP, randf_range(-0.2, 0.2)) * 10.0 + random_upward_force)
 		timer.start()
 		died.emit()
-		ko_sound.play()
-		
 		lock_rotation = false
 
 func _on_timer_timeout():
