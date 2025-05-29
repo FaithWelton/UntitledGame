@@ -9,3 +9,6 @@ func increase_score():
 	
 func _on_mob_spawner_mob_spawned(mob: Variant) -> void:
 	mob.died.connect(increase_score)
+
+func _on_kill_plane_body_entered(body: Node3D) -> void:
+	get_tree().reload_current_scene.call_deferred()

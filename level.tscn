@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cfjym1biucj47"]
+[gd_scene load_steps=9 format=3 uid="uid://cfjym1biucj47"]
 
 [ext_resource type="Script" uid="uid://lg3ro48akrnx" path="res://level.gd" id="1_f2txt"]
 [ext_resource type="Material" uid="uid://bon2b2rxm03vd" path="res://level/material/ground.tres" id="1_oi3di"]
@@ -20,6 +20,8 @@ fog_light_color = Color(0.172342, 0.516332, 0.690224, 1)
 fog_density = 0.0055
 fog_height = -2.3
 fog_height_density = 0.3537
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_f2txt"]
 
 [node name="Level" type="Node3D"]
 script = ExtResource("1_f2txt")
@@ -130,6 +132,13 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_f2txt")
 
+[node name="KillPlane" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KillPlane"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 10)
+shape = SubResource("WorldBoundaryShape3D_f2txt")
+
 [connection signal="mob_spawned" from="MobSpawner" to="." method="_on_mob_spawner_mob_spawned"]
+[connection signal="body_entered" from="KillPlane" to="." method="_on_kill_plane_body_entered"]
 
 [editable path="Player"]
