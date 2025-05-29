@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://cu1osu06xkg4k" path="res://mob/bat/bat_model.gd" id="2_vgr6s"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_030dj"]
+resource_local_to_scene = true
 resource_name = "bat_mat"
 cull_mode = 2
 albedo_texture = ExtResource("2_030dj")
@@ -194,19 +195,19 @@ node_connections = [&"OneShot", 0, &"Idle", &"OneShot", 1, &"Hurt", &"output", 0
 script = ExtResource("2_vgr6s")
 
 [node name="Skeleton3D" parent="Armature" index="0"]
-bones/0/position = Vector3(0, 0.0100287, 0)
-bones/1/rotation = Quaternion(0.199688, -0.00714668, -0.591388, 0.781239)
-bones/2/rotation = Quaternion(0.0719272, 0.0325006, 0.408537, 0.909323)
-bones/3/rotation = Quaternion(-0.0460155, 0.0339107, 0.32723, 0.943214)
-bones/4/rotation = Quaternion(0.199688, 0.00714668, 0.591388, 0.781239)
-bones/5/rotation = Quaternion(0.0719272, -0.0325006, -0.408537, 0.909323)
-bones/6/rotation = Quaternion(-0.0460155, -0.0339107, -0.32723, 0.943214)
+bones/0/position = Vector3(0, 0.0236, 0)
+bones/1/rotation = Quaternion(0.175098, 0.000176989, -0.643434, 0.745207)
+bones/2/rotation = Quaternion(0.174983, 0.0757041, 0.389528, 0.901065)
+bones/3/rotation = Quaternion(0.147005, 0.108142, 0.359478, 0.915134)
+bones/4/rotation = Quaternion(0.175098, -0.000176989, 0.643434, 0.745207)
+bones/5/rotation = Quaternion(0.174983, -0.0757041, -0.389528, 0.901065)
+bones/6/rotation = Quaternion(0.147005, -0.108142, -0.359478, 0.915134)
 bones/7/position = Vector3(0.130992, -0.227392, -0.0878515)
 bones/7/rotation = Quaternion(0.261968, 0.0834552, 0.265751, 0.924005)
-bones/8/rotation = Quaternion(3.34721e-08, 0.56412, 0.825693, 2.01607e-08)
+bones/8/rotation = Quaternion(3.80097e-08, 0.66119, 0.750218, 2.3198e-08)
 bones/10/position = Vector3(-0.130992, -0.227392, -0.0878515)
 bones/10/rotation = Quaternion(0.261968, -0.0834552, -0.265751, 0.924005)
-bones/11/rotation = Quaternion(2.43899e-08, 0.56412, 0.825693, 4.0551e-08)
+bones/11/rotation = Quaternion(2.32131e-08, 0.66119, 0.750218, 3.95585e-08)
 
 [node name="bat" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = SubResource("StandardMaterial3D_030dj")
@@ -225,4 +226,4 @@ tree_root = SubResource("AnimationNodeBlendTree_shx3p")
 anim_player = NodePath("../AnimationPlayer")
 parameters/OneShot/active = 0.0
 parameters/OneShot/internal_active = 0.0
-parameters/OneShot/request = -0.007669
+parameters/OneShot/request = 0

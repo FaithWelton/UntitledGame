@@ -5,9 +5,11 @@ var health = 3
 
 @onready var timer = %Timer
 @onready var bat_model = %bat_model
-@onready var player = get_node("../Player")
+@onready var player = get_node("/root/Level/Player")
 
 func _physics_process(delta):
+	print("physics_process")
+	print(global_position )
 	var direction = global_position.direction_to(player.global_position)
 	direction.y = 0.0
 	linear_velocity = direction * speed
