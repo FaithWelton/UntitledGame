@@ -7,6 +7,8 @@ var health = 3
 
 @onready var timer = %Timer
 @onready var bat_model = %bat_model
+@onready var hurt_sound: AudioStreamPlayer3D = $HurtSound
+@onready var ko_sound: AudioStreamPlayer3D = $KOSound
 @onready var player = get_node("/root/Level/Player")
 
 func _physics_process(delta):
@@ -20,8 +22,8 @@ func take_damage():
 		return
 
 	bat_model.hurt()
-
 	health -= 1
+	hurt_sound.play()
 
 	if health == 0:
 		set_physics_process(false)
@@ -30,10 +32,10 @@ func take_damage():
 		var random_upward_force = Vector3.UP * randf() * 5.0
 		apply_central_impulse(direction.rotated(Vector3.UP, randf_range(-0.2, 0.2)) * 10.0 + random_upward_force)
 		timer.start()
+		died.emit()
+		ko_sound.play()
 		
 		lock_rotation = false
-		
-		died.emit()
 
 func _on_timer_timeout():
 	queue_free()
