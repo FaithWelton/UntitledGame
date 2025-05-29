@@ -3,7 +3,7 @@
 [ext_resource type="Material" uid="uid://bon2b2rxm03vd" path="res://level/material/ground.tres" id="1_oi3di"]
 [ext_resource type="PackedScene" uid="uid://bbpjbhytogjax" path="res://player/player.tscn" id="1_u52ul"]
 [ext_resource type="Material" uid="uid://cqywqq5qccu5p" path="res://level/material/bridge.tres" id="2_0b4ue"]
-[ext_resource type="PackedScene" uid="uid://b61fcqpngcvxp" path="res://mob/mob.tscn" id="4_0b4ue"]
+[ext_resource type="PackedScene" uid="uid://bgsrddgwv5kqc" path="res://mob/mob.tscn" id="4_0b4ue"]
 
 [sub_resource type="Environment" id="Environment_f2txt"]
 background_mode = 1
@@ -113,7 +113,7 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_f2txt")
 
-[node name="Mob" parent="." instance=ExtResource("4_0b4ue")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -15)
+[node name="RigidBody3D" parent="." instance=ExtResource("4_0b4ue")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -15)
 
 [editable path="Player"]

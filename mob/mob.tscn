@@ -1,14 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://b61fcqpngcvxp"]
+[gd_scene load_steps=4 format=3 uid="uid://bgsrddgwv5kqc"]
 
-[ext_resource type="PackedScene" uid="uid://cl0oi3m3x2iar" path="res://mob/bat/bat_model.tscn" id="1_7b8ug"]
+[ext_resource type="Script" uid="uid://bbbmxdbfc8g7e" path="res://mob/mob.gd" id="1_6jlfs"]
+[ext_resource type="PackedScene" uid="uid://d2ojqxkda4qvx" path="res://mob/bat/bat_model.tscn" id="1_7b8ug"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_6jlfs"]
-radius = 0.355
+[sub_resource type="SphereShape3D" id="SphereShape3D_7b8ug"]
+radius = 0.3
 
 [node name="Mob" type="RigidBody3D"]
 gravity_scale = 0.0
+script = ExtResource("1_6jlfs")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("SphereShape3D_6jlfs")
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.85, 0, 0, 0)
+shape = SubResource("SphereShape3D_7b8ug")
 
 [node name="bat_model" parent="." instance=ExtResource("1_7b8ug")]
+unique_name_in_owner = true
