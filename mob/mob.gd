@@ -1,5 +1,7 @@
 extends RigidBody3D
 
+signal died
+
 var speed = randf_range(2.0, 4.0)
 var health = 3
 
@@ -8,8 +10,6 @@ var health = 3
 @onready var player = get_node("/root/Level/Player")
 
 func _physics_process(delta):
-	print("physics_process")
-	print(global_position )
 	var direction = global_position.direction_to(player.global_position)
 	direction.y = 0.0
 	linear_velocity = direction * speed
@@ -32,6 +32,8 @@ func take_damage():
 		timer.start()
 		
 		lock_rotation = false
+		
+		died.emit()
 
 func _on_timer_timeout():
 	queue_free()
