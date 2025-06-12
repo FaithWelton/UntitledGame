@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://bml6pagitgpdb"]
+
+[ext_resource type="PackedScene" uid="uid://4ai6vir54dk" path="res://Player/player.tscn" id="1_h2yge"]
+[ext_resource type="PackedScene" uid="uid://cmq5mjgb0jtrk" path="res://Camera/camera_controller.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://clknn5g32rxf2" path="res://Environment/environment.tscn" id="3_1bvp3"]
+
+[node name="Main" type="Node3D"]
+
+[node name="Player" parent="." instance=ExtResource("1_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06638, 0)
+
+[node name="CameraController" parent="." instance=ExtResource("2_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00770855, 1.0834, 0)
+
+[node name="Environment" parent="." instance=ExtResource("3_1bvp3")]

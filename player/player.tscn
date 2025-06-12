@@ -1,51 +1,26 @@
-[gd_scene load_steps=6 format=3 uid="uid://bbpjbhytogjax"]
+[gd_scene load_steps=6 format=3 uid="uid://4ai6vir54dk"]
 
-[ext_resource type="Script" uid="uid://tfqjpb0dcja4" path="res://player/player.gd" id="1_1t06j"]
-[ext_resource type="PackedScene" uid="uid://n0bakrhtsq17" path="res://player/simple_gun/gun_model.glb" id="1_jq1i7"]
-[ext_resource type="Texture2D" uid="uid://cxr40xl3b2nl8" path="res://player/reticle.png" id="3_xx22o"]
-[ext_resource type="AudioStream" uid="uid://c5ie3uclaf7p1" path="res://player/gun_shoot.wav" id="4_yw30f"]
+[ext_resource type="Script" uid="uid://bhtrehl6sxnxb" path="res://Player/player.gd" id="1_l8h54"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_vu45j"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+albedo_color = Color(0.0509804, 1, 0, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_h2yge"]
+material = SubResource("StandardMaterial3D_0xm2m")
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7dm0k"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ig7tw"]
 
 [node name="Player" type="CharacterBody3D"]
-collision_mask = 3
-script = ExtResource("1_1t06j")
+script = ExtResource("1_l8h54")
+
+[node name="Face" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.75, 0, 0, 0, -2.18557e-08, -0.75, 0, 0.5, -3.27835e-08, 0, 0.431487, -0.102927)
+mesh = SubResource("CapsuleMesh_h2yge")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_7dm0k")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_vu45j")
-
-[node name="Camera3D" type="Camera3D" parent="."]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.56352, 0)
-
-[node name="gun_model" parent="Camera3D" instance=ExtResource("1_jq1i7")]
-transform = Transform3D(-0.499999, 0, 0.00112577, 0, 0.5, 0, -0.00112577, 0, -0.499999, 0.490925, -0.350667, -0.778586)
-
-[node name="Marker3D" type="Marker3D" parent="Camera3D"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.473229, -0.342994, -1.07096)
-
-[node name="Reticle" type="TextureRect" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -18.0
-offset_top = -18.0
-offset_right = 18.0
-offset_bottom = 18.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("3_xx22o")
-expand_mode = 1
-
-[node name="Timer" type="Timer" parent="."]
-unique_name_in_owner = true
-wait_time = 0.2
-one_shot = true
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-unique_name_in_owner = true
-stream = ExtResource("4_yw30f")
+shape = SubResource("CapsuleShape3D_ig7tw")

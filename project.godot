@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Untitled Game"
-run/main_scene="uid://cfjym1biucj47"
+run/main_scene="uid://bml6pagitgpdb"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [display]
