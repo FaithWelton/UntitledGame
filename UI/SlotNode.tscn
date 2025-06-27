@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dxvnyp6srn66s"]
+
+[ext_resource type="Script" uid="uid://b78hph5i78iiv" path="res://UI/SlotNode.gd" id="1_iiirx"]
+
+[node name="Slot1" type="TextureRect"]
+custom_minimum_size = Vector2(20, 20)
+expand_mode = 1
+script = ExtResource("1_iiirx")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]

@@ -1,0 +1,9 @@
+{
+  "health_potion": {
+	"name": "Health Potion",
+	"icon": "res://Assets/Icons/HealthPotion.png",
+	"description": "Restores 50 HP when consumed.",
+	"stackable": true,
+	"max_stack_size": 10
+  }
+}

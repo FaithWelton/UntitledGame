@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://dup4xt4wkc8ha"]
+
+[ext_resource type="Script" uid="uid://c6et5srk740jf" path="res://Scripts/ItemResource.gd" id="1_t5ibm"]
+[ext_resource type="Texture2D" uid="uid://legk4841s6cr" path="res://Assets/Items/health.png" id="1_tptp0"]
+
+[resource]
+script = ExtResource("1_t5ibm")
+name = "Health Potion"
+description = "A refreshing beverage"
+icon = ExtResource("1_tptp0")
+use_effect = "drink"
+inv_slot = "Toolbar"
+inv_position = 1
+metadata/_custom_type_script = "uid://c6et5srk740jf"

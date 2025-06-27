@@ -1,0 +1,196 @@
+[gd_scene load_steps=4 format=3 uid="uid://bwqg1ob5ouaev"]
+
+[ext_resource type="Texture2D" uid="uid://jxdujvjj7wev" path="res://Assets/Inventory/Inventory_style_02a.png" id="1_dewil"]
+[ext_resource type="Script" uid="uid://cg6chk4tlravk" path="res://Scripts/Inventory.gd" id="1_efu02"]
+[ext_resource type="PackedScene" uid="uid://dxvnyp6srn66s" path="res://UI/SlotNode.tscn" id="3_2tckp"]
+
+[node name="Inventory" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_efu02")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -412.0
+offset_top = -245.0
+offset_right = -209.0
+offset_bottom = -128.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(4, 4)
+texture = ExtResource("1_dewil")
+
+[node name="Backpack" type="GridContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 6.0
+offset_right = 197.0
+offset_bottom = 83.0
+theme_override_constants/h_separation = -1
+theme_override_constants/v_separation = -1
+columns = 6
+
+[node name="Slot1" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot2" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot3" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot4" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot5" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot6" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot7" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot8" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot9" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot10" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot11" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot12" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot13" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot14" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot15" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot16" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot17" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot18" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot19" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot20" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot21" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot22" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot23" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot24" parent="TextureRect/Backpack" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Toolbar" type="GridContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 91.0
+offset_right = 197.0
+offset_bottom = 111.0
+theme_override_constants/h_separation = -1
+columns = 10
+
+[node name="Slot1" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot2" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot3" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot4" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot5" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot6" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot7" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot8" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot9" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot10" parent="TextureRect/Toolbar" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="EquipLeft" type="GridContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 26.0
+offset_bottom = 65.0
+theme_override_constants/v_separation = -1
+
+[node name="Slot1" parent="TextureRect/EquipLeft" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot2" parent="TextureRect/EquipLeft" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot3" parent="TextureRect/EquipLeft" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="EquipRight" type="GridContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 54.0
+offset_top = 6.0
+offset_right = 74.0
+offset_bottom = 65.0
+theme_override_constants/v_separation = -1
+
+[node name="Slot1" parent="TextureRect/EquipRight" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot2" parent="TextureRect/EquipRight" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="Slot3" parent="TextureRect/EquipRight" instance=ExtResource("3_2tckp")]
+layout_mode = 2
+
+[node name="PlayerBox" type="MarginContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 15.0
+offset_right = 56.0
+offset_bottom = 55.0
+
+[node name="TextureRect" type="TextureRect" parent="TextureRect/PlayerBox"]
+layout_mode = 2
+expand_mode = 1
