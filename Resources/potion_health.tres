@@ -6,9 +6,13 @@
 [resource]
 script = ExtResource("1_t5ibm")
 name = "Health Potion"
-description = "A refreshing beverage"
+description = "Restores 50 HP when consumed."
 icon = ExtResource("1_tptp0")
 use_effect = "drink"
+type = "Useable"
+health = 50
+strength = 0
+armor = 0
 inv_slot = "Toolbar"
 inv_position = 1
 metadata/_custom_type_script = "uid://c6et5srk740jf"

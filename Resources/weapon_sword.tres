@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://hk7blc7yl4dt"]
+
+[ext_resource type="Texture2D" uid="uid://c8dmopqc5uhqn" path="res://Assets/Items/sword.png" id="1_604tk"]
+[ext_resource type="Script" uid="uid://c6et5srk740jf" path="res://Scripts/ItemResource.gd" id="2_73g3e"]
+
+[resource]
+script = ExtResource("2_73g3e")
+name = "Sword"
+description = "A sturdy weapon."
+icon = ExtResource("1_604tk")
+use_effect = ""
+type = "Weapon"
+health = 0
+strength = 50
+armor = 0
+inv_slot = "Backpack"
+inv_position = 1
+metadata/_custom_type_script = "uid://c6et5srk740jf"

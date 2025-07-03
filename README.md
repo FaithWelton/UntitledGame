@@ -6,9 +6,14 @@ Expanding/Changing:
 		- Setup Camera Controller
 		- Removed all but one platform from world environment, made that platform bigger (temp)
 
-
-Following these tutorials to learn how to create and manage an inventory: 
+Followed these tutorials to learn how to create and manage an inventory: 
 	https://www.youtube.com/watch?v=A0ShW-ZMXm0
 	https://www.youtube.com/watch?v=zqbmUv-S1io
-	https://www.youtube.com/watch?v=RDcW8mf9PXI * Currently midway through this one
+	https://www.youtube.com/watch?v=RDcW8mf9PXI
 	https://www.youtube.com/watch?v=VJVGSB5M1pc
+
+Need to make some proper assets to replace tutorial/placeholders:
+	- Inventory Background Bits
+	- Inventory Trash
+	- Player Character
+	- Items: Health Potion, Armor, Weapon

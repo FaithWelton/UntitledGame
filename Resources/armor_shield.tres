@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://vpt5e5u165rm"]
+
+[ext_resource type="Texture2D" uid="uid://tpt1x37hn01s" path="res://Assets/Items/shield.png" id="1_pqjpn"]
+[ext_resource type="Script" uid="uid://c6et5srk740jf" path="res://Scripts/ItemResource.gd" id="2_ugx2y"]
+
+[resource]
+script = ExtResource("2_ugx2y")
+name = "Shield"
+description = "A shield for protection."
+icon = ExtResource("1_pqjpn")
+use_effect = ""
+type = "Armor"
+health = 100
+strength = 0
+armor = 25
+inv_slot = "Backpack"
+inv_position = 2
+metadata/_custom_type_script = "uid://c6et5srk740jf"

@@ -1,9 +1,21 @@
 {
-  "health_potion": {
-	"name": "Health Potion",
-	"icon": "res://Assets/Icons/HealthPotion.png",
-	"description": "Restores 50 HP when consumed.",
-	"stackable": true,
-	"max_stack_size": 10
-  }
+	"potion_health": {
+		"name": "Health Potion",
+		"icon": "res://Assets/Items/health.png",
+		"description": "Restores 50 HP when consumed.",
+		"stackable": true,
+		"max_stack_size": 10
+	},
+	"armor_shield": {
+		"name": "Armor",
+		"icon": "res://Assets/Items/shield.png",
+		"description": "A shield for protection.",
+		"stackable": false
+	},
+	"weapon_sword": {
+		"name": "Sword",
+		"icon": "res://Assets/Items/sword.png",
+		"description": "A sturdy weapon.",
+		"stackable": false
+	}
 }
