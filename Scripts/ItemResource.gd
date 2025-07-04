@@ -6,7 +6,7 @@ class_name Item
 @export_multiline var description: String
 @export var icon: CompressedTexture2D
 @export var use_effect: String
-@export_enum("Weapon", "Armor", "Useable") var type: String
+@export_enum("Weapon", "Armor", "Useable", "Interactable") var type: String
 
 @export_group("Stats")
 @export var health: int

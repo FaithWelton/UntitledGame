@@ -1,16 +1,14 @@
-[gd_scene load_steps=6 format=3 uid="uid://bml6pagitgpdb"]
+[gd_scene load_steps=7 format=3 uid="uid://bml6pagitgpdb"]
 
 [ext_resource type="PackedScene" uid="uid://4ai6vir54dk" path="res://Player/Player.tscn" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://c8j78g7486k80" path="res://Main.gd" id="1_lquwl"]
 [ext_resource type="PackedScene" uid="uid://cmq5mjgb0jtrk" path="res://Camera/CameraController.tscn" id="2_h2yge"]
 [ext_resource type="PackedScene" uid="uid://clknn5g32rxf2" path="res://Environment/Environment.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bwqg1ob5ouaev" path="res://UI/Inventory.tscn" id="4_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://b835apd0x1sua" path="res://Items/ball.tscn" id="6_7mycd"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_lquwl")
-
-[node name="Player" parent="." instance=ExtResource("1_h2yge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.06638, 0)
 
 [node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
 
@@ -26,3 +24,15 @@ grow_vertical = 2
 
 [node name="Inventory" parent="UI" instance=ExtResource("4_1bvp3")]
 layout_mode = 1
+
+[node name="Player" parent="." instance=ExtResource("1_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.247713, 1.05, 0.385427)
+
+[node name="Ball" parent="." instance=ExtResource("6_7mycd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.73747, 0.55, 3.7728)
+
+[node name="Ball2" parent="." instance=ExtResource("6_7mycd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.00219, 0.549999, 1.89637)
+
+[node name="Ball3" parent="." instance=ExtResource("6_7mycd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.20205, 0.55, -0.689815)

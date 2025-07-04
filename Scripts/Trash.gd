@@ -3,6 +3,8 @@ extends MarginContainer
 @onready var trash = $TextureRect
 
 func _process(delta: float) -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	if is_mouse_over_trash():
 		trash.texture = load("res://Assets/Inventory/trash-open.png")
 	else:

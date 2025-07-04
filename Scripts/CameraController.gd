@@ -17,7 +17,6 @@ var smooth_velocity: Vector3 = Vector3.ZERO
 func _ready():
 	# Capture mouse for camera control
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _input(event):
 	if event is InputEventMouseMotion:

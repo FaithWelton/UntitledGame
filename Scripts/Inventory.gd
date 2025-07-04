@@ -1,10 +1,11 @@
 extends Control
+class_name Inventory
 
 signal drop_out
-# TODO: Make item dropped outside of inventory appear on ground
 
 @onready var inventory = self
 @onready var player = get_node("../../Player")
+@onready var camera = get_node("../../CameraController")
 
 @onready var backpack = $TextureRect/Backpack
 @onready var toolbar = $TextureRect/Toolbar
@@ -16,15 +17,17 @@ signal drop_out
 @onready var strength_label: Label = $PlayerStatsLabel/Strength
 @onready var armor_label: Label = $PlayerStatsLabel/Armor
 
+@onready var world_node = get_node("../..")
+
 var inv_dictionary = {}
 var items = [
 	"res://Resources/potion_health.tres",
 	"res://Resources/armor_shield.tres",
-	"res://Resources/weapon_sword.tres"
+	"res://Resources/weapon_sword.tres",
 ]
 var on_inventory = false
 
-func _ready() -> void:
+func _ready() -> void:	
 	inv_dictionary = {
 		"Backpack": backpack,
 		"Toolbar": toolbar,
@@ -35,23 +38,58 @@ func _ready() -> void:
 	_refresh_ui()
 	_refresh_player_stats()
 
-func _physics_process(delta):
+func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_inventory"): toggle_inventory()
 
 func toggle_inventory():
 	inventory.visible = !inventory.visible
-	get_tree().paused = inventory.visible # Pause Player and Camera Movement
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+	if inventory.visible:
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+		camera.process_mode = Node.PROCESS_MODE_DISABLED
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		player.process_mode = Node.PROCESS_MODE_INHERIT
+		camera.process_mode = Node.PROCESS_MODE_INHERIT
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-func add_item(item: Item):
-	item.inv_slot = "backpack"
-	item.inv_position = _get_next_empty_bag_slot()
+func add_item(item) -> bool:	
+	if not item:
+		print("ERROR: Invalid item!")
+		return false
+	
+	if not item is Item:
+		print("ERROR: Item is not of type 'Item'. Actual type: ", item.get_class())
+		return false
+		
+	item.inv_slot = "Backpack"
+	var next_slot = _get_next_empty_bag_slot()
+		
+	if next_slot == null:
+		print("ERROR: Inventory full!")
+		return false
+	
+	item.inv_position = next_slot
+	
+	var item_path = item.resource_path	
+	if item_path == "":
+		print("ERROR: Item has no resource path")
+		return false
+	
+	items.append(item_path)
+	
+	_refresh_ui()
+	_refresh_player_stats()
+	
+	print("Added item: " + item.name + " to slot " + str(next_slot))
+	return true
 
 func _get_next_empty_bag_slot():
-	for slot in inv_dictionary["backpack"].get_children():
+	for slot in inv_dictionary["Backpack"].get_children():
 		if slot.texture == null:
 			var slot_number = int(slot.name.split("Slot")[1])
 			return slot_number
+	return null # No empty slots found
 
 func _get_drag_data(at_position: Vector2) -> Variant:
 	var drag_slot_node = get_slot_node_at_position(at_position)
@@ -78,7 +116,7 @@ func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 	if on_trash:
 		drag_slot_node.delete_resource()
 	elif not on_inventory:
-		drop_out.emit(drag_slot_node.item_resource, at_position)
+		_spawn_3d_item(drag_slot_node.item_resource, at_position)
 		drag_slot_node.delete_resource()
 	else:
 		var target_slot_node = get_slot_node_at_position(at_position)
@@ -89,6 +127,29 @@ func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 		drag_slot_node.set_new_data(target_resource)
 	
 	_refresh_player_stats()
+
+func _spawn_3d_item(item_resource: Item, screen_position: Vector2) -> void:
+	var spawn_distance = 2.0
+	var spawn_position = player.global_position + player.global_basis.z * -spawn_distance
+	
+	var random_offset = Vector3(randf_range(-0.5, 0.5), randf_range(0, 0.5), randf_range(-0.5, 0.5))
+	spawn_position += random_offset
+	
+	var item_3d = _create_3d_item_node(item_resource, spawn_position)
+	if item_3d:
+		world_node.add_child(item_3d)
+		print("Spawned 3D Item: " + item_resource.name + " at position: " + str(spawn_position))
+
+func _create_3d_item_node(item_resource: Item, spawn_position: Vector3) -> Node3D:
+	var scene = load("res://Items/" + item_resource.name + ".tscn")
+	var scene_instance = scene.instantiate()
+	scene_instance.set_name(item_resource.name)
+	
+	var item_3d = scene_instance
+	item_3d.name = item_resource.name + "_3D"
+	item_3d.global_position = spawn_position
+
+	return item_3d
 
 func _refresh_player_stats():
 	var equip_stats = {
@@ -129,12 +190,14 @@ func _on_trash(position: Vector2) -> bool:
 
 func _refresh_ui():
 	for item in items:
-		item = load(item)
+		print(item)
 		
+		item = load(item)
+	
 		var inv_slot = item["inv_slot"]
 		var inv_position = item["inv_position"]
 		var icon = item["icon"]
-		
+				
 		for slot in inv_dictionary[inv_slot].get_children():
 			var slot_number = int(slot.name.split("Slot")[1])
 			

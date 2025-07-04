@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://b835apd0x1sua"]
+
+[ext_resource type="Script" uid="uid://83nqaskk64ty" path="res://Scripts/ball.gd" id="1_lljuh"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_41u45"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ktgx5"]
+albedo_color = Color(1, 0.501961, 0.592157, 1)
+clearcoat_enabled = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_hgol0"]
+material = SubResource("StandardMaterial3D_ktgx5")
+
+[node name="Ball" type="RigidBody3D"]
+script = ExtResource("1_lljuh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_41u45")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+text = "E"
+font_size = 70
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_hgol0")

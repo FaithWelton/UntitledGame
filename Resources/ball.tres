@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://buxewi2dwf1q0"]
+
+[ext_resource type="Texture2D" uid="uid://f4g0imhwy38o" path="res://Assets/Items/ball.png" id="1_6aq0n"]
+[ext_resource type="Script" uid="uid://c6et5srk740jf" path="res://Scripts/ItemResource.gd" id="2_noh13"]
+
+[resource]
+script = ExtResource("2_noh13")
+name = "Ball"
+description = "It bounces."
+icon = ExtResource("1_6aq0n")
+use_effect = ""
+type = "Interactable"
+health = 0
+strength = 0
+armor = 0
+inv_slot = ""
+inv_position = 0
+metadata/_custom_type_script = "uid://c6et5srk740jf"
