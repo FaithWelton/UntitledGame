@@ -1,21 +1,38 @@
 {
 	"potion_health": {
 		"name": "Health Potion",
-		"icon": "res://Assets/Items/health.png",
 		"description": "Restores 50 HP when consumed.",
-		"stackable": true,
-		"max_stack_size": 10
+		"icon": "res://Assets/Items/health.png",
+		"use_effect": "drink",
+		"type": "Useable", 
+		"health": 50,
+		"strength": 0,
+		"armor": 0,
+		"inv_slot": "",
+		"inv_position": null,
 	},
 	"armor_shield": {
-		"name": "Armor",
-		"icon": "res://Assets/Items/shield.png",
+		"name": "Shield",
 		"description": "A shield for protection.",
-		"stackable": false
+		"icon": "res://Assets/Items/shield.png",
+		"use_effect": "",
+		"type": "Armor", 
+		"health": 100,
+		"strength": 0,
+		"armor": 50,
+		"inv_slot": "",
+		"inv_position": null,
 	},
-	"weapon_sword": {
+	"weapon_sword": {		
 		"name": "Sword",
-		"icon": "res://Assets/Items/sword.png",
 		"description": "A sturdy weapon.",
-		"stackable": false
+		"icon": "res://Assets/Items/sword.png",
+		"use_effect": "",
+		"type": "Weapon", 
+		"health": 0,
+		"strength": 50,
+		"armor": 0,
+		"inv_slot": "",
+		"inv_position": null,
 	}
 }

@@ -1,8 +1,6 @@
 extends Control
 class_name Inventory
 
-signal drop_out
-
 @onready var inventory = self
 @onready var player = get_node("../../Player")
 @onready var camera = get_node("../../CameraController")
@@ -34,16 +32,16 @@ func _ready() -> void:
 		"EquipLeft": equip_left,
 		"EquipRight": equip_right,
 	}
-	
+
 	_refresh_ui()
 	_refresh_player_stats()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_inventory"): toggle_inventory()
 
 func toggle_inventory():
 	inventory.visible = !inventory.visible
-	
+
 	if inventory.visible:
 		player.process_mode = Node.PROCESS_MODE_DISABLED
 		camera.process_mode = Node.PROCESS_MODE_DISABLED
@@ -55,33 +53,32 @@ func toggle_inventory():
 
 func add_item(item) -> bool:	
 	if not item:
-		print("ERROR: Invalid item!")
+		print_rich("[color=red][b]ERROR:[/b] Invalid Item![/color]")
 		return false
-	
+
 	if not item is Item:
-		print("ERROR: Item is not of type 'Item'. Actual type: ", item.get_class())
+		print_rich("[color=red][b]ERROR:[/b] Item is not of type 'Item'. Actual type: " + item.get_class() + "[/color]")
 		return false
-		
+
 	item.inv_slot = "Backpack"
 	var next_slot = _get_next_empty_bag_slot()
-		
 	if next_slot == null:
-		print("ERROR: Inventory full!")
+		print_rich("[color=red][b]ERROR:[/b] Inventory full![/color]")
 		return false
-	
+
 	item.inv_position = next_slot
-	
+
 	var item_path = item.resource_path	
 	if item_path == "":
-		print("ERROR: Item has no resource path")
+		print_rich("[color=red][b]ERROR:[/b] Item has no resource path![/color]")
 		return false
-	
+
 	items.append(item_path)
-	
+
 	_refresh_ui()
 	_refresh_player_stats()
-	
-	print("Added item: " + item.name + " to slot " + str(next_slot))
+
+	print_rich("[color=green][b]ADD ITEM:[/b][/color] [color=light_green]" + item.name + "[/color] to [color=light_blue]Inventory Slot" + str(next_slot) + "[/color]")
 	return true
 
 func _get_next_empty_bag_slot():
@@ -116,11 +113,10 @@ func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 	if on_trash:
 		drag_slot_node.delete_resource()
 	elif not on_inventory:
-		_spawn_3d_item(drag_slot_node.item_resource, at_position)
+		_spawn_3d_item(drag_slot_node.item_resource)
 		drag_slot_node.delete_resource()
 	else:
 		var target_slot_node = get_slot_node_at_position(at_position)
-		var target_texture = target_slot_node.texture
 		var target_resource = target_slot_node.item_resource
 
 		target_slot_node.set_new_data(drag_slot_node.item_resource)
@@ -128,7 +124,7 @@ func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 	
 	_refresh_player_stats()
 
-func _spawn_3d_item(item_resource: Item, screen_position: Vector2) -> void:
+func _spawn_3d_item(item_resource: Item) -> void:
 	var spawn_distance = 2.0
 	var spawn_position = player.global_position + player.global_basis.z * -spawn_distance
 	
@@ -138,10 +134,10 @@ func _spawn_3d_item(item_resource: Item, screen_position: Vector2) -> void:
 	var item_3d = _create_3d_item_node(item_resource, spawn_position)
 	if item_3d:
 		world_node.add_child(item_3d)
-		print("Spawned 3D Item: " + item_resource.name + " at position: " + str(spawn_position))
+		print_rich("[color=green][b]SPAWNED 3D ITEM:[/b][/color] [color=light_green]" + item_resource.name + "[/color] at position [color=light_blue]" + str(spawn_position) + "[/color]")
 
 func _create_3d_item_node(item_resource: Item, spawn_position: Vector3) -> Node3D:
-	var scene = load("res://Items/" + item_resource.name + ".tscn")
+	var scene = load("res://Items/" + item_resource.name.to_lower() + ".tscn")
 	var scene_instance = scene.instantiate()
 	scene_instance.set_name(item_resource.name)
 	
@@ -172,7 +168,7 @@ func _refresh_player_stats():
 	strength_label.set_text("Strength: " + str(PlayerStats.strength))
 	armor_label.set_text("Armor: " + str(PlayerStats.armor))
 
-func get_slot_node_at_position(position: Vector2):
+func get_slot_node_at_position(node_at_position: Vector2):
 	var all_slot_nodes = (
 		backpack.get_children()
 		+ toolbar.get_children()
@@ -182,21 +178,18 @@ func get_slot_node_at_position(position: Vector2):
 	
 	for node in all_slot_nodes:
 		var nodeRect = node.get_global_rect()
-		if nodeRect.has_point(position):
+		if nodeRect.has_point(node_at_position):
 			return node
 
-func _on_trash(position: Vector2) -> bool:
-	return trash.get_global_rect().has_point(position)
+func _on_trash(at_position: Vector2) -> bool:
+	return trash.get_global_rect().has_point(at_position)
 
 func _refresh_ui():
 	for item in items:
-		print(item)
-		
 		item = load(item)
 	
 		var inv_slot = item["inv_slot"]
 		var inv_position = item["inv_position"]
-		var icon = item["icon"]
 				
 		for slot in inv_dictionary[inv_slot].get_children():
 			var slot_number = int(slot.name.split("Slot")[1])
