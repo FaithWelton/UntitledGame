@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://15mh2nydvm6s"]
+
+[ext_resource type="Script" uid="uid://c714ygv7phmyt" path="res://Scripts/Items/generic_item.gd" id="1_a1fp0"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v8xvn"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jyx45"]
+albedo_color = Color(0.677679, 0.187212, 0.313742, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q38ow"]
+material = SubResource("StandardMaterial3D_jyx45")
+
+[node name="GenericItem" type="RigidBody3D"]
+script = ExtResource("1_a1fp0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_v8xvn")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_q38ow")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+text = "E"
+font_size = 70

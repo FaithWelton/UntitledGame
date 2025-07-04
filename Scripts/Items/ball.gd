@@ -9,6 +9,7 @@ var selected = false
 func _ready() -> void:
 	add_to_group("object")
 	label.hide()
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.top_level = true
 
 func set_selection(boolean: bool) -> void:
