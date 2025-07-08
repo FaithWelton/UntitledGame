@@ -8,8 +8,7 @@ func set_new_data(resource: Item) -> void:
 		texture = item_resource.icon
 		item_resource.inv_slot = get_parent().name
 		item_resource.inv_position = int(name.split("Slot")[1])
-	else:
-		texture = null
+	else: texture = null
 
 func _on_gui_input(event: InputEvent) -> void:
 	if (event is InputEventMouseButton && event.pressed && event.double_click && event.button_index == 1):
@@ -29,8 +28,7 @@ func delete_resource() -> void:
 	texture = null
 	item_resource = null
 
-func get_slot_name():
+func get_slot_name() -> String:
 	var parent_name = get_parent().name
 	var slot_number = name.split("Slot")[1]
-
 	return parent_name + slot_number

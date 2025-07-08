@@ -19,9 +19,24 @@ class_name Inventory
 
 var inv_dictionary = {}
 var starting_items = [
-	"res://Resources/potion_health.tres",
-	"res://Resources/armor_shield.tres",
-	"res://Resources/weapon_sword.tres",
+	{
+		"name": "potion_health",
+		"display_name": "Health Potion",
+		"path": "res://Resources/potion_health.tres",
+		"position": "Toolbar",
+	},
+	{
+		"name": "armor_shield",
+		"display_name": "Shield",
+		"path": "res://Resources/armor_shield.tres",
+		"position": "Backpack",
+	},
+	{
+		"name": "weapon_sword",
+		"display_name": "Sword",
+		"path": "res://Resources/weapon_sword.tres",
+		"position": "Backpack",
+	},
 ]
 var on_inventory = false
 
@@ -36,41 +51,21 @@ func _ready() -> void:
 	_add_starting_items()
 	_refresh_player_stats()
 
-func _add_starting_items():
-	# Add health potion to toolbar
-	var health_potion = load("res://Resources/potion_health.tres")
-	if health_potion:
-		add_item(health_potion, "Toolbar")
-	else:
-		print_rich("[color=red][b]ERROR:[/b] Failed to load health potion[/color]")
-	
-	# Add shield and sword to backpack
-	var shield = load("res://Resources/armor_shield.tres")
-	if shield:
-		add_item(shield, "Backpack")
-	else:
-		print_rich("[color=red][b]ERROR:[/b] Failed to load shield[/color]")
-	
-	var sword = load("res://Resources/weapon_sword.tres")
-	if sword:
-		add_item(sword, "Backpack")
-	else:
-		print_rich("[color=red][b]ERROR:[/b] Failed to load sword[/color]")
+func _add_starting_items() -> void:
+	for item in starting_items:
+		var resource = load(item["path"])
+		if resource: add_item(resource, item["position"])
+		else: print_rich("[color=red][b]ERROR:[/b] Failed to load starting item: " + item["display_name"] + "[/color]")
+	print_rich("[color=purple][b]NOTICE:[/b] Starting Items Added![/color]")
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_inventory"): toggle_inventory()
 
-func toggle_inventory():
+func toggle_inventory() -> void:
 	inventory.visible = !inventory.visible
-
-	if inventory.visible:
-		player.process_mode = Node.PROCESS_MODE_DISABLED
-		camera.process_mode = Node.PROCESS_MODE_DISABLED
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	else:
-		player.process_mode = Node.PROCESS_MODE_INHERIT
-		camera.process_mode = Node.PROCESS_MODE_INHERIT
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	player.process_mode = Node.PROCESS_MODE_DISABLED if inventory.visible else Node.PROCESS_MODE_INHERIT
+	camera.process_mode = Node.PROCESS_MODE_DISABLED if inventory.visible else Node.PROCESS_MODE_INHERIT
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if inventory.visible else Input.MOUSE_MODE_CAPTURED
 
 func add_item(item, preferred_slot: String = "Backpack") -> bool:	
 	if not item:
@@ -94,11 +89,19 @@ func add_item(item, preferred_slot: String = "Backpack") -> bool:
 	print_rich("[color=green][b]ADD ITEM:[/b][/color] [color=light_green]" + item.name + "[/color] to [color=light_blue]" + preferred_slot + " Slot" + str(slot_number) + "[/color]")
 	return true
 
-func _get_next_empty_slot_node(slot_type: String = "Backpack"):
+func remove_item(item) -> bool:
+	if not item:
+		print_rich("[color=red][b]ERROR:[/b] Invalid Item![/color]")
+		return false
+
+	print_rich("[color=orange][b]REMOVE ITEM:[/b][/color] [color=light_green]" + item.item_resource.name + "[/color]")
+	item.delete_resource()
+	return true
+
+func _get_next_empty_slot_node(slot_type: String = "Backpack") -> Variant:
 	if slot_type in inv_dictionary:
 		for slot in inv_dictionary[slot_type].get_children():
-			if slot.texture == null:
-				return slot
+			if slot.texture == null: return slot
 	return null # No empty slots found
 
 func _get_drag_data(at_position: Vector2) -> Variant:
@@ -122,14 +125,14 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 
 func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 	var on_trash = _on_trash(at_position)
-
-	if on_trash:
-		drag_slot_node.delete_resource()
+	
+	if on_trash: remove_item(drag_slot_node)
 	elif not on_inventory:
 		var spawned = _spawn_3d_item(drag_slot_node.item_resource)
-		if spawned: drag_slot_node.delete_resource()
+		if spawned: remove_item(drag_slot_node)
 	else:
 		var target_slot_node = get_slot_node_at_position(at_position)
+		if not target_slot_node: return
 		var target_resource = target_slot_node.item_resource
 
 		target_slot_node.set_new_data(drag_slot_node.item_resource)
@@ -177,14 +180,12 @@ func _create_generic_item(item_resource: Item, spawn_position: Vector3) -> Node3
 	new_material.albedo_texture = texture
 	
 	var mesh_instance = scene_instance.get_node("MeshInstance3D")
-	if mesh_instance:
-		mesh_instance.material_override = new_material
-	else:
-		print_rich("[color=red][b]ERROR:[/b] MeshInstance3D not found in scene[/color]")
+	if mesh_instance: mesh_instance.material_override = new_material
+	else: print_rich("[color=red][b]ERROR:[/b] MeshInstance3D not found in scene[/color]")
 	
 	return scene_instance
 
-func _refresh_player_stats():
+func _refresh_player_stats() -> void:
 	var equip_stats = { "health": 0, "strength": 0, "armor": 0, }
 	
 	for slot in equip_left.get_children() + equip_right.get_children():
@@ -201,19 +202,20 @@ func _refresh_player_stats():
 	strength_label.set_text("Strength: " + str(PlayerStats.strength))
 	armor_label.set_text("Armor: " + str(PlayerStats.armor))
 
-func get_slot_node_at_position(node_at_position: Vector2):
+func get_slot_node_at_position(node_at_position: Vector2) -> Variant:
 	var all_slot_nodes = (backpack.get_children() + toolbar.get_children() + equip_left.get_children() + equip_right.get_children())
 
 	for node in all_slot_nodes:
 		var nodeRect = node.get_global_rect()
-		if nodeRect.has_point(node_at_position):
-			return node
+		if nodeRect.has_point(node_at_position): return node
+	
+	return null
 
 func _on_trash(at_position: Vector2) -> bool:
 	return trash.get_global_rect().has_point(at_position)
 
-func _is_item_allowed(item, slot_node):
-	if slot_node == null: return
+func _is_item_allowed(item, slot_node) -> bool:
+	if slot_node == null: return false
 	
 	var slot_name = slot_node.get_slot_name()
 	var item_type = item.type
@@ -231,8 +233,7 @@ func _is_item_allowed(item, slot_node):
 	
 	if access_left_1 || access_left_2 || access_left_3 || access_right_1 || access_right_2 || access_right_3:
 		return true
-	else:
-		return false
+	else: return false
 
 func _on_texture_rect_mouse_entered() -> void:
 	on_inventory = true

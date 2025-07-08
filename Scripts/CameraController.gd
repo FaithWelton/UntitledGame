@@ -29,8 +29,7 @@ func _process(delta) -> void:
 	current_rotation = smooth_damp_vector3(current_rotation, next_rotation, smooth_velocity, delta)
 	transform.basis = Basis.from_euler(current_rotation)
 
-	if player:
-		global_position = player.global_position - transform.basis.z * distance_from_target
+	if player: global_position = player.global_position - transform.basis.z * distance_from_target
 
 func smooth_damp_vector3(current: Vector3, target: Vector3, current_velocity: Vector3, delta: float) -> Vector3:
 	var omega = 2.0 / smooth_time

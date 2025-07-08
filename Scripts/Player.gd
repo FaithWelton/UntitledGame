@@ -11,53 +11,44 @@ extends CharacterBody3D
 
 var objects_in_range := []
 
-func _ready():
-	if not is_on_floor():
-		velocity.y = gravity_value
+func _ready() -> void:
+	if not is_on_floor(): velocity.y = gravity_value
 
 func _process(_delta: float) -> void:
 	_set_nearest_object()
 	
-	if Input.is_action_just_pressed("Interact"):
-		interact()
+	if Input.is_action_just_pressed("Interact"): interact()
 
-func interact():
+func interact() -> void:
 	if objects_in_range == []: return
 	
 	var nearest_object = null
 	for object in objects_in_range:
-		# Check if object is still valid before accessing properties
 		if is_instance_valid(object) and object.selected:
 			nearest_object = object
 			break
 	
 	if nearest_object and is_instance_valid(nearest_object):
 		var item_resource = load(nearest_object.resource)
-		if item_resource:
-			if inventory:
-				var success = inventory.add_item(item_resource)
-				if success:
-					nearest_object.queue_free()
-					objects_in_range.erase(nearest_object)
-				else:
-					print_rich("[color=red][b]ERROR:[/b] Failed to add item to inventory![/color]")
-			else:
-				print_rich("[color=red][b]ERROR:[/b] Inventory not found![/color]")
-		else:
-			print_rich("[color=red][b]ERROR:[/b] Failed to load item resource: " + nearest_object.resource + "![/color]")
+		if not item_resource:
+			return print_rich("[color=red][b]ERROR:[/b] Failed to load item resource: " + nearest_object.resource + "![/color]")
+		if not inventory: return print_rich("[color=red][b]ERROR:[/b] Inventory not found![/color]")
+		
+		var success = inventory.add_item(item_resource)
+		if success:
+			nearest_object.queue_free()
+			objects_in_range.erase(nearest_object)
+		else: print_rich("[color=red][b]ERROR:[/b] Failed to add item to inventory![/color]")
 
-func _set_nearest_object():
-	if objects_in_range.is_empty(): return
-	
-	# Clean up invalid objects first
+func _set_nearest_object() -> void:
 	objects_in_range = objects_in_range.filter(func(obj): return is_instance_valid(obj))
-	
 	if objects_in_range.is_empty(): return
 	
 	var nearest_object = null
 	for object in objects_in_range:
 		if is_instance_valid(object):
 			object.set_selection(false)
+			
 			if not nearest_object:
 				nearest_object = object
 			elif nearest_object.global_position.distance_to(global_position) > object.global_position.distance_to(global_position):
@@ -66,15 +57,12 @@ func _set_nearest_object():
 	if nearest_object and is_instance_valid(nearest_object):
 		nearest_object.set_selection(true)
 
-func _physics_process(delta):
+func _physics_process(delta) -> void:
 	movement(delta)
 
-func movement(delta):
-	if not is_on_floor():
-		velocity.y += gravity_value * delta
-	else:
-		if velocity.y < 0:
-			velocity.y = 0
+func movement(delta) -> void:
+	if not is_on_floor(): velocity.y += gravity_value * delta
+	elif velocity.y < 0: velocity.y = 0
 
 	var horizontal_input = Input.get_axis("move_left", "move_right")
 	var vertical_input = Input.get_axis("move_forward", "move_back")
@@ -102,8 +90,5 @@ func _on_interaction_area_body_entered(body: Node3D) -> void:
 
 func _on_interaction_area_body_exited(body: Node3D) -> void:
 	if body in get_tree().get_nodes_in_group("object"):
-		# Check if the object is still valid before calling methods
-		if is_instance_valid(body):
-			body.set_selection(false)
-		# Remove from array regardless of validity
+		if is_instance_valid(body): body.set_selection(false)
 		objects_in_range.erase(body)
