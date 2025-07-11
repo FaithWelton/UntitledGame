@@ -1,16 +1,13 @@
 extends MarginContainer
 
-@onready var trash = $TextureRect
+@onready var poof_particles = $TrashArea/SmokePoof
+@onready var swirl = $Swirl
 
-@onready var texture_open = load("res://Assets/Inventory/trash-open.png")
-@onready var texture_closed = load("res://Assets/Inventory/trash.png")
+func activate_poof() -> void:
+	poof_particles.emitting = true
 
-func _process(_delta: float) -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	if is_mouse_over_trash(): trash.texture = texture_open
-	else: trash.texture = texture_closed
+func activate_swirl() -> void:
+	swirl.emitting = true
 
-func is_mouse_over_trash() -> bool:
-	var mouse_position = get_global_mouse_position()
-	return trash.get_global_rect().has_point(mouse_position)
+func deactivate_swirl() -> void:
+	swirl.emitting = false

@@ -1,18 +1,15 @@
-[gd_scene load_steps=7 format=3 uid="uid://bml6pagitgpdb"]
+[gd_scene load_steps=8 format=3 uid="uid://bml6pagitgpdb"]
 
-[ext_resource type="PackedScene" uid="uid://4ai6vir54dk" path="res://Player/Player.tscn" id="1_h2yge"]
+[ext_resource type="PackedScene" uid="uid://4ai6vir54dk" path="res://Characters/Player/Player.tscn" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://c8j78g7486k80" path="res://Main.gd" id="1_lquwl"]
-[ext_resource type="PackedScene" uid="uid://cmq5mjgb0jtrk" path="res://Camera/CameraController.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://cmq5mjgb0jtrk" path="res://Characters/Camera/CameraController.tscn" id="2_h2yge"]
 [ext_resource type="PackedScene" uid="uid://clknn5g32rxf2" path="res://Environment/Environment.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bwqg1ob5ouaev" path="res://UI/Inventory.tscn" id="4_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://b835apd0x1sua" path="res://Items/ball.tscn" id="6_7mycd"]
+[ext_resource type="PackedScene" uid="uid://1suubji6u6uw" path="res://Characters/Bat/Bat.tscn" id="7_272bh"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_lquwl")
-
-[node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
-
-[node name="CameraController" parent="." instance=ExtResource("2_h2yge")]
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
@@ -23,9 +20,15 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Inventory" parent="UI" instance=ExtResource("4_1bvp3")]
+unique_name_in_owner = true
 layout_mode = 1
 
+[node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
+
+[node name="CameraController" parent="." instance=ExtResource("2_h2yge")]
+
 [node name="Player" parent="." instance=ExtResource("1_h2yge")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.247713, 1.05, 0.385427)
 
 [node name="Ball" parent="." instance=ExtResource("6_7mycd")]
@@ -36,3 +39,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.00219, 0.549999, 1.89637)
 
 [node name="Ball3" parent="." instance=ExtResource("6_7mycd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.20205, 0.55, -0.689815)
+
+[node name="Bat" parent="." instance=ExtResource("7_272bh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.21393, 1.51619, -8.59672)

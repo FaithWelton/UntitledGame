@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqunaqo7q58yo"
-path="res://.godot/imported/trash.png-e8b07609c74fd7779ca29266fa254b36.ctex"
+uid="uid://blaluv8l07j6u"
+path="res://.godot/imported/placehold_armor.png-4b316706f5f6feb847e91e1405029f88.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Inventory/trash.png"
-dest_files=["res://.godot/imported/trash.png-e8b07609c74fd7779ca29266fa254b36.ctex"]
+source_file="res://Assets/Inventory/placehold_armor.png"
+dest_files=["res://.godot/imported/placehold_armor.png-4b316706f5f6feb847e91e1405029f88.ctex"]
 
 [params]
 

@@ -22,19 +22,19 @@ var starting_items = [
 	{
 		"name": "potion_health",
 		"display_name": "Health Potion",
-		"path": "res://Resources/potion_health.tres",
+		"path": "res://Items/Resources/potion_health.tres",
 		"position": "Toolbar",
 	},
 	{
 		"name": "armor_shield",
 		"display_name": "Shield",
-		"path": "res://Resources/armor_shield.tres",
+		"path": "res://Items/Resources/armor_shield.tres",
 		"position": "Backpack",
 	},
 	{
 		"name": "weapon_sword",
 		"display_name": "Sword",
-		"path": "res://Resources/weapon_sword.tres",
+		"path": "res://Items/Resources/weapon_sword.tres",
 		"position": "Backpack",
 	},
 ]
@@ -119,6 +119,10 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	var drag_item = data.item_resource
 	
 	var on_trash = _on_trash(at_position)
+	
+	if on_trash: trash.activate_swirl()
+	else: trash.deactivate_swirl()
+	
 	var item_allowed = _is_item_allowed(drag_item, target_slot_node)
 	
 	return (target_slot_node != null && item_allowed) || on_trash || not on_inventory
@@ -126,8 +130,11 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
 	var on_trash = _on_trash(at_position)
 	
-	if on_trash: remove_item(drag_slot_node)
-	elif not on_inventory:
+	if on_trash:
+		trash.activate_poof()
+		remove_item(drag_slot_node)
+		trash.deactivate_swirl()
+	elif not on_inventory and not on_trash:
 		var spawned = _spawn_3d_item(drag_slot_node.item_resource)
 		if spawned: remove_item(drag_slot_node)
 	else:
@@ -147,43 +154,12 @@ func _spawn_3d_item(item_resource: Item) -> bool:
 	var random_offset = Vector3(randf_range(-0.5, 0.5), randf_range(0, 0.5), randf_range(-0.5, 0.5))
 	spawn_position += random_offset
 	
-	var item_3d = _create_3d_item_node(item_resource, spawn_position)
+	var item_3d = Global._create_3d_item_node(item_resource, spawn_position)
 	if not item_3d: return false
 	
 	world_node.add_child(item_3d)
 	print_rich("[color=green][b]SPAWNED 3D ITEM:[/b][/color] [color=light_green]" + item_resource.name + "[/color] at position [color=light_blue]" + str(spawn_position) + "[/color]")
 	return true
-
-func _create_3d_item_node(item_resource: Item, spawn_position: Vector3) -> Node3D:
-	var scene_path = "res://Items/" + item_resource.name.to_lower() + ".tscn"
-	if not FileAccess.file_exists(scene_path):
-		print_rich("[color=red][b]ERROR:[/b] No scene file found! Loading Generic[/color]")
-		return _create_generic_item(item_resource, spawn_position)
-	
-	var scene = load(scene_path)
-	var scene_instance = scene.instantiate()
-	scene_instance.set_name(item_resource.name)
-	scene_instance.position = spawn_position
-	
-	return scene_instance
-
-func _create_generic_item(item_resource: Item, spawn_position: Vector3) -> Node3D:
-	var scene = load("res://Items/generic_item.tscn")
-	
-	var scene_instance = scene.instantiate()
-	scene_instance.set_name(item_resource.name)
-	scene_instance.resource = item_resource.resource_path
-	scene_instance.position = spawn_position
-		
-	var texture = item_resource.icon
-	var new_material = StandardMaterial3D.new()
-	new_material.albedo_texture = texture
-	
-	var mesh_instance = scene_instance.get_node("MeshInstance3D")
-	if mesh_instance: mesh_instance.material_override = new_material
-	else: print_rich("[color=red][b]ERROR:[/b] MeshInstance3D not found in scene[/color]")
-	
-	return scene_instance
 
 func _refresh_player_stats() -> void:
 	var equip_stats = { "health": 0, "strength": 0, "armor": 0, }

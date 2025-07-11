@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqunaqo7q58yo"
-path="res://.godot/imported/trash.png-e8b07609c74fd7779ca29266fa254b36.ctex"
+uid="uid://bn6nd3yjaxnfq"
+path="res://.godot/imported/voidrocks.png-0c20b49cbbc747775f8294fc45478e00.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Inventory/trash.png"
-dest_files=["res://.godot/imported/trash.png-e8b07609c74fd7779ca29266fa254b36.ctex"]
+source_file="res://Assets/Inventory/voidrocks.png"
+dest_files=["res://.godot/imported/voidrocks.png-0c20b49cbbc747775f8294fc45478e00.ctex"]
 
 [params]
 

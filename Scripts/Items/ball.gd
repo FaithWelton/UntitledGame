@@ -1,6 +1,6 @@
 extends RigidBody3D
 
-@export var resource: String = "res://Resources/ball.tres"
+@export var resource: String = "res://Items/Resources/ball.tres"
 
 @onready var label: Label3D = $Label3D
 

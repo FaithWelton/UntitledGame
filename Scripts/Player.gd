@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name Player
 
 @export var player_speed: float = 5.0
 @export var rotation_speed: float = 10.0
@@ -12,12 +13,17 @@ extends CharacterBody3D
 var objects_in_range := []
 
 func _ready() -> void:
+	add_to_group("player")
 	if not is_on_floor(): velocity.y = gravity_value
 
 func _process(_delta: float) -> void:
 	_set_nearest_object()
 	
 	if Input.is_action_just_pressed("Interact"): interact()
+	
+	var timer = %Timer
+	if Input.is_action_pressed("shoot") and timer.is_stopped():
+		shoot_bullet()
 
 func interact() -> void:
 	if objects_in_range == []: return
@@ -39,6 +45,17 @@ func interact() -> void:
 			nearest_object.queue_free()
 			objects_in_range.erase(nearest_object)
 		else: print_rich("[color=red][b]ERROR:[/b] Failed to add item to inventory![/color]")
+
+func shoot_bullet() -> void:
+	const BULLET = preload("res://Projectiles/Bullet.tscn")
+	var new_bullet = BULLET.instantiate()
+	var spawner = $ProjectileSpawner
+	spawner.add_child(new_bullet)
+	
+	new_bullet.global_transform = spawner.global_transform
+	
+	var timer = %Timer
+	timer.start()
 
 func _set_nearest_object() -> void:
 	objects_in_range = objects_in_range.filter(func(obj): return is_instance_valid(obj))

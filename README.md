@@ -17,7 +17,5 @@ Expanding/Changing:
 	- Adjust/assign print messages for certain activities
 
 Need to make some proper assets to replace tutorial/placeholders:
-	- Inventory Background Bits
-	- Inventory Trash
 	- Player Character
 	- Items: Health Potion, Armor, Weapon

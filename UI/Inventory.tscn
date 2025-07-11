@@ -1,13 +1,13 @@
 [gd_scene load_steps=10 format=3 uid="uid://bwqg1ob5ouaev"]
 
-[ext_resource type="Texture2D" uid="uid://jxdujvjj7wev" path="res://Assets/Inventory/Inventory_style_02a.png" id="1_dewil"]
+[ext_resource type="Texture2D" uid="uid://dcsgqmmt1ffie" path="res://Assets/Inventory/Inventory_BG.png" id="1_dewil"]
 [ext_resource type="Script" uid="uid://cg6chk4tlravk" path="res://Scripts/Inventory.gd" id="1_efu02"]
 [ext_resource type="PackedScene" uid="uid://dxvnyp6srn66s" path="res://UI/SlotNode.tscn" id="3_2tckp"]
-[ext_resource type="PackedScene" uid="uid://b2i6amxab3ahg" path="res://UI/trash.tscn" id="4_f42xq"]
-[ext_resource type="Texture2D" uid="uid://df7v14401x6mx" path="res://Assets/Inventory/weapon_placehold.png" id="4_pr3c0"]
-[ext_resource type="Texture2D" uid="uid://blaluv8l07j6u" path="res://Assets/Inventory/armor_placehold.png" id="5_slwwj"]
-[ext_resource type="Texture2D" uid="uid://cdhrafnrp0vr5" path="res://Assets/Inventory/rings_placehold.png" id="6_7dq67"]
-[ext_resource type="Texture2D" uid="uid://bdffmx4bj8s6x" path="res://Assets/Inventory/shoe_placehold.png" id="7_2bvq2"]
+[ext_resource type="Texture2D" uid="uid://df7v14401x6mx" path="res://Assets/Inventory/placehold_weapon.png" id="4_pr3c0"]
+[ext_resource type="Texture2D" uid="uid://blaluv8l07j6u" path="res://Assets/Inventory/placehold_armor.png" id="5_slwwj"]
+[ext_resource type="Texture2D" uid="uid://cdhrafnrp0vr5" path="res://Assets/Inventory/placehold_ring.png" id="6_7dq67"]
+[ext_resource type="Texture2D" uid="uid://bdffmx4bj8s6x" path="res://Assets/Inventory/placehold_shoe.png" id="7_2bvq2"]
+[ext_resource type="PackedScene" uid="uid://bljljf3ah70ej" path="res://UI/Trash.tscn" id="8_pr3c0"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_f42xq"]
 line_spacing = 1.0
@@ -272,13 +272,6 @@ offset_bottom = 55.0
 layout_mode = 2
 expand_mode = 1
 
-[node name="Trash" parent="." instance=ExtResource("4_f42xq")]
-layout_mode = 1
-offset_left = -555.0
-offset_top = -432.0
-offset_right = -440.0
-offset_bottom = -317.0
-
 [node name="PlayerStatsLabel" type="MarginContainer" parent="."]
 layout_mode = 0
 offset_left = 583.0
@@ -308,6 +301,14 @@ text = "Armor:"
 label_settings = SubResource("LabelSettings_f42xq")
 vertical_alignment = 1
 uppercase = true
+
+[node name="Trash" parent="." instance=ExtResource("8_pr3c0")]
+layout_mode = 1
+offset_left = -554.0
+offset_top = -423.0
+offset_right = -454.0
+offset_bottom = -323.0
+scale = Vector2(1.28998, 1.22851)
 
 [connection signal="mouse_entered" from="TextureRect" to="." method="_on_texture_rect_mouse_entered"]
 [connection signal="mouse_exited" from="TextureRect" to="." method="_on_texture_rect_mouse_exited"]
