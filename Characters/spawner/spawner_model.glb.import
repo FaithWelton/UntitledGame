@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b0y2ohapa1xer"
-path="res://.godot/imported/spawner_model.glb-97f71d32dcde5ac724a4cd21f541f20f.scn"
+path="res://.godot/imported/spawner_model.glb-30d8fd64f03d164612745c94fd30b113.scn"
 
 [deps]
 
-source_file="res://Characters/spawner/spawner_model.glb"
-dest_files=["res://.godot/imported/spawner_model.glb-97f71d32dcde5ac724a4cd21f541f20f.scn"]
+source_file="res://Characters/Spawner/spawner_model.glb"
+dest_files=["res://.godot/imported/spawner_model.glb-30d8fd64f03d164612745c94fd30b113.scn"]
 
 [params]
 

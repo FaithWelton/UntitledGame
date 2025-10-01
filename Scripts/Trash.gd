@@ -1,13 +1,16 @@
 extends MarginContainer
 
-@onready var poof_particles = $TrashArea/SmokePoof
-@onready var swirl = $Swirl
+@onready var poof_particles: GPUParticles2D = $TrashArea/SmokePoof
+@onready var swirl_particles: GPUParticles2D = $Swirl
 
 func activate_poof() -> void:
-	poof_particles.emitting = true
+	if poof_particles:
+		poof_particles.emitting = true
 
 func activate_swirl() -> void:
-	swirl.emitting = true
+	if swirl_particles:
+		swirl_particles.emitting = true
 
 func deactivate_swirl() -> void:
-	swirl.emitting = false
+	if swirl_particles:
+		swirl_particles.emitting = false

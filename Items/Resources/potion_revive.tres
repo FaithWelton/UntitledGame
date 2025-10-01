@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://fbmflwdfrjy3"]
+
+[ext_resource type="Texture2D" uid="uid://b55s1878hu3hl" path="res://Assets/Items/revive.png" id="1_njvfw"]
+[ext_resource type="Script" uid="uid://c6et5srk740jf" path="res://Scripts/ItemResource.gd" id="2_xpep0"]
+
+[resource]
+script = ExtResource("2_xpep0")
+name = "Revive Potion"
+description = "Restores a life to full health."
+icon = ExtResource("1_njvfw")
+use_effect = "revive"
+type = 2
+health = 500
+strength = 0
+armor = 0
+inv_slot = ""
+inv_position = 0
+metadata/_custom_type_script = "uid://c6et5srk740jf"

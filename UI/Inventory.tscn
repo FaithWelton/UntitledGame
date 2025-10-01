@@ -11,7 +11,7 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_f42xq"]
 line_spacing = 1.0
-font_size = 13
+font_size = 20
 font_color = Color(0, 0, 0, 1)
 
 [node name="Inventory" type="Control"]
@@ -277,7 +277,8 @@ layout_mode = 0
 offset_left = 583.0
 offset_top = 556.0
 offset_right = 802.0
-offset_bottom = 618.0
+offset_bottom = 639.0
+scale = Vector2(0.75, 0.75)
 
 [node name="Health" type="Label" parent="PlayerStatsLabel"]
 layout_mode = 2

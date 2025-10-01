@@ -1,14 +1,22 @@
-[gd_scene load_steps=8 format=3 uid="uid://bml6pagitgpdb"]
+[gd_scene load_steps=12 format=3 uid="uid://bml6pagitgpdb"]
 
 [ext_resource type="PackedScene" uid="uid://4ai6vir54dk" path="res://Characters/Player/Player.tscn" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://c8j78g7486k80" path="res://Main.gd" id="1_lquwl"]
-[ext_resource type="PackedScene" uid="uid://cmq5mjgb0jtrk" path="res://Characters/Camera/CameraController.tscn" id="2_h2yge"]
+[ext_resource type="Script" uid="uid://fhrern8kenip" path="res://Scripts/UI.gd" id="2_5vw27"]
 [ext_resource type="PackedScene" uid="uid://clknn5g32rxf2" path="res://Environment/Environment.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bwqg1ob5ouaev" path="res://UI/Inventory.tscn" id="4_1bvp3"]
+[ext_resource type="Script" uid="uid://dv75mvpjsh4ig" path="res://Scripts/DeathDialog.gd" id="4_kek77"]
+[ext_resource type="Script" uid="uid://dngfcnrwb83y6" path="res://Scripts/ItemTooltip.gd" id="5_4c57u"]
 [ext_resource type="PackedScene" uid="uid://b835apd0x1sua" path="res://Items/ball.tscn" id="6_7mycd"]
-[ext_resource type="PackedScene" uid="uid://1suubji6u6uw" path="res://Characters/Bat/Bat.tscn" id="7_272bh"]
+[ext_resource type="PackedScene" uid="uid://1suubji6u6uw" path="res://Characters/Mob/Mob.tscn" id="7_272bh"]
+[ext_resource type="PackedScene" uid="uid://st3sqvn8803" path="res://Characters/Spawner/MobSpawner.tscn" id="8_5vw27"]
 
-[node name="Main" type="Node3D"]
+[sub_resource type="LabelSettings" id="LabelSettings_272bh"]
+line_spacing = 1.0
+font_size = 25
+font_color = Color(0, 0, 0, 1)
+
+[node name="Main" type="Node3D" groups=["world"]]
 script = ExtResource("1_lquwl")
 
 [node name="UI" type="Control" parent="."]
@@ -18,14 +26,111 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2_5vw27")
 
 [node name="Inventory" parent="UI" instance=ExtResource("4_1bvp3")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
+[node name="EnemyStatsLabel" type="MarginContainer" parent="UI"]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 24.0
+offset_right = 244.0
+offset_bottom = 42.0
 
-[node name="CameraController" parent="." instance=ExtResource("2_h2yge")]
+[node name="LiveEnemies" type="Label" parent="UI/EnemyStatsLabel"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Live Enemies:"
+label_settings = SubResource("LabelSettings_272bh")
+vertical_alignment = 1
+uppercase = true
+
+[node name="PlayerStatsLabel" type="MarginContainer" parent="UI"]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 51.0
+offset_right = 244.0
+offset_bottom = 69.0
+
+[node name="Health" type="Label" parent="UI/PlayerStatsLabel"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Player Health:"
+label_settings = SubResource("LabelSettings_272bh")
+vertical_alignment = 1
+uppercase = true
+
+[node name="DeathDialog" type="Panel" parent="UI"]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 337.0
+offset_right = 1042.0
+offset_bottom = 561.0
+script = ExtResource("4_kek77")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/DeathDialog"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 27.0
+offset_bottom = -31.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Message" type="Label" parent="UI/DeathDialog/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Message Go Here"
+horizontal_alignment = 1
+
+[node name="ButtonContainer" type="HBoxContainer" parent="UI/DeathDialog/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="ReviveButton" type="Button" parent="UI/DeathDialog/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Revive"
+flat = true
+
+[node name="RespawnButton" type="Button" parent="UI/DeathDialog/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Respawn"
+
+[node name="ItemTooltip" type="PanelContainer" parent="UI" groups=["item_tooltip"]]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -104.0
+offset_right = 1.0
+grow_vertical = 0
+script = ExtResource("5_4c57u")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/ItemTooltip"]
+layout_mode = 2
+
+[node name="ItemName" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+layout_mode = 2
+
+[node name="ItemType" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+layout_mode = 2
+
+[node name="Description" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+layout_mode = 2
+
+[node name="Stats" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+layout_mode = 2
+
+[node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
 
 [node name="Player" parent="." instance=ExtResource("1_h2yge")]
 unique_name_in_owner = true
@@ -40,5 +145,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.00219, 0.549999, 1.89637)
 [node name="Ball3" parent="." instance=ExtResource("6_7mycd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.20205, 0.55, -0.689815)
 
-[node name="Bat" parent="." instance=ExtResource("7_272bh")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.21393, 1.51619, -8.59672)
+[node name="MobSpawner" parent="." instance=ExtResource("8_5vw27")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.417, 0.0499992, -8.3417)
+mob_to_spawn = ExtResource("7_272bh")

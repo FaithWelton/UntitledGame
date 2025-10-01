@@ -11,6 +11,18 @@
 		"inv_slot": "",
 		"inv_position": null,
 	},
+	"potion_revive": {
+		"name": "Revive Potion",
+		"description": "Restores a life to full health.",
+		"icon": "res://Assets/Items/revive.png",
+		"use_effect": "revive",
+		"type": "Useable", 
+		"health": 0,
+		"strength": 0,
+		"armor": 0,
+		"inv_slot": "",
+		"inv_position": null,
+	},
 	"armor_shield": {
 		"name": "Shield",
 		"description": "A shield for protection.",

@@ -1,10 +1,47 @@
-[gd_scene load_steps=2 format=3 uid="uid://dxvnyp6srn66s"]
+[gd_scene load_steps=4 format=3 uid="uid://dxvnyp6srn66s"]
 
 [ext_resource type="Script" uid="uid://b78hph5i78iiv" path="res://Scripts/SlotNode.gd" id="1_iiirx"]
 
+[sub_resource type="SystemFont" id="SystemFont_iiirx"]
+subpixel_positioning = 0
+
+[sub_resource type="LabelSettings" id="LabelSettings_o6nd2"]
+font = SubResource("SystemFont_iiirx")
+font_size = 20
+font_color = Color(0, 0, 0, 1)
+
 [node name="Slot1" type="TextureRect"]
 custom_minimum_size = Vector2(20, 20)
+anchors_preset = -1
+anchor_left = 0.005
+anchor_top = 0.009
+anchor_right = 0.005
+anchor_bottom = 0.009
+offset_left = -9.6
+offset_top = -9.72
+offset_right = -9.6
+offset_bottom = -9.72
 expand_mode = 1
 script = ExtResource("1_iiirx")
+
+[node name="StackLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.0
+offset_top = -8.0
+offset_right = 16.0
+offset_bottom = 20.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.2, 0.2)
+text = "99"
+label_settings = SubResource("LabelSettings_o6nd2")
+horizontal_alignment = 2
+vertical_alignment = 2
+uppercase = true
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]

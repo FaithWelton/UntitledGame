@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://1suubji6u6uw"]
 
-[ext_resource type="PackedScene" uid="uid://b2fcpdxx3fk7l" path="res://Characters/Bat/BatModel.tscn" id="1_31bnx"]
-[ext_resource type="Script" uid="uid://dbpthr3vid5jq" path="res://Scripts/Bat.gd" id="1_fksse"]
+[ext_resource type="PackedScene" uid="uid://b2fcpdxx3fk7l" path="res://Characters/Mob/Bat/BatModel.tscn" id="1_31bnx"]
+[ext_resource type="Script" uid="uid://dbpthr3vid5jq" path="res://Scripts/Mob.gd" id="1_fksse"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_a7ual"]
 radius = 0.330882
@@ -25,7 +25,7 @@ unique_name_in_owner = true
 
 [node name="Timer" type="Timer" parent="."]
 unique_name_in_owner = true
-wait_time = 2.0
+wait_time = 1.25
 one_shot = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

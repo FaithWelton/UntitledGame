@@ -1,28 +1,43 @@
 extends Control
 class_name Inventory
 
-@onready var inventory = self
-@onready var player = get_node("../../Player")
-@onready var camera = get_node("../../CameraController")
+const SPAWN_DISTANCE: float = 2.0
+const RANDOM_OFFSET_RANGE: float = 0.5
 
-@onready var backpack = $TextureRect/Backpack
-@onready var toolbar = $TextureRect/Toolbar
-@onready var equip_left = $TextureRect/EquipLeft
-@onready var equip_right = $TextureRect/EquipRight
-@onready var trash = $Trash
+@onready var inventory_panel: TextureRect = $TextureRect
+@onready var backpack: GridContainer = $TextureRect/Backpack
+@onready var toolbar: GridContainer = $TextureRect/Toolbar
+@onready var equip_left: GridContainer = $TextureRect/EquipLeft
+@onready var equip_right: GridContainer = $TextureRect/EquipRight
+@onready var trash: MarginContainer = $Trash
 
 @onready var health_label: Label = $PlayerStatsLabel/Health
+@onready var ui_health_label: Label = $"../PlayerStatsLabel/Health"
 @onready var strength_label: Label = $PlayerStatsLabel/Strength
 @onready var armor_label: Label = $PlayerStatsLabel/Armor
 
-@onready var world_node = get_node("../..")
+var player: Node3D
+var world_node: Node3D
 
-var inv_dictionary = {}
-var starting_items = [
+var inventory_sections: Dictionary = {}
+var currently_dragging_slot: Node = null
+var starting_items: Array[Dictionary] = [
 	{
 		"name": "potion_health",
 		"display_name": "Health Potion",
 		"path": "res://Items/Resources/potion_health.tres",
+		"position": "Toolbar",
+	},
+	{
+		"name": "potion_health_2",
+		"display_name": "Health Potion",
+		"path": "res://Items/Resources/potion_health.tres",
+		"position": "Toolbar",
+	},
+	{
+		"name": "potion_revive",
+		"display_name": "Revive Potion",
+		"path": "res://Items/Resources/potion_revive.tres",
 		"position": "Toolbar",
 	},
 	{
@@ -38,181 +53,455 @@ var starting_items = [
 		"position": "Backpack",
 	},
 ]
-var on_inventory = false
 
-func _ready() -> void:	
-	inv_dictionary = {
+var is_inventory_open: bool = false
+var on_inventory: bool = false
+
+func _ready() -> void:
+	add_to_group("inventory")
+
+	# Allow inventory to process even when game is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	_find_player()
+	_find_world_node()
+	_initialize_inventory_sections()
+	_connect_slot_signals()
+	_add_starting_items()
+	_refresh_player_stats()
+
+	PlayerStats.health_changed.connect(_on_player_health_changed)
+
+func _connect_slot_signals() -> void:
+	var all_slots = _get_all_inventory_slots()
+	for slot in all_slots:
+		if slot.has_signal("item_used"):
+			slot.item_used.connect(_on_item_used)
+
+func _find_player() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+
+	if players.is_empty():
+		push_warning("No player found yet in 'player' group - will retry when needed")
+		return
+
+	player = players[0]
+
+func _ensure_player_found() -> bool:
+	if player:
+		return true
+
+	_find_player()
+	return player != null
+
+func _find_world_node() -> void:
+	var worlds = get_tree().get_nodes_in_group("world")
+
+	if worlds.is_empty():
+		push_error("No world node found! Make sure the world/level node is in the 'world' group")
+		return
+
+	world_node = worlds[0]
+
+func _initialize_inventory_sections() -> void:
+	inventory_sections = {
 		"Backpack": backpack,
 		"Toolbar": toolbar,
 		"EquipLeft": equip_left,
 		"EquipRight": equip_right,
 	}
 
-	_add_starting_items()
-	_refresh_player_stats()
-
 func _add_starting_items() -> void:
-	for item in starting_items:
-		var resource = load(item["path"])
-		if resource: add_item(resource, item["position"])
-		else: print_rich("[color=red][b]ERROR:[/b] Failed to load starting item: " + item["display_name"] + "[/color]")
-	print_rich("[color=purple][b]NOTICE:[/b] Starting Items Added![/color]")
+	for item_data in starting_items:
+		var resource = load(item_data["path"])
+		if resource and resource is Item:
+			add_item(resource, item_data["position"])
+		else:
+			push_error("Failed to load starting item: " + item_data["display_name"])
+	
+func _notification(what: int) -> void:
+	# NOTIFICATION_DRAG_END is called when drag ends without a successful drop
+	if what == NOTIFICATION_DRAG_END:
+		if currently_dragging_slot:
+			var mouse_pos = get_global_mouse_position()
+			var is_over_inventory_panel = inventory_panel.get_global_rect().has_point(mouse_pos)
+
+			if not is_over_inventory_panel:
+				_handle_world_drop(currently_dragging_slot)
+
+			currently_dragging_slot = null
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("toggle_inventory"): toggle_inventory()
+	if Input.is_action_just_pressed("toggle_inventory"):
+		toggle_inventory()
 
 func toggle_inventory() -> void:
-	inventory.visible = !inventory.visible
-	player.process_mode = Node.PROCESS_MODE_DISABLED if inventory.visible else Node.PROCESS_MODE_INHERIT
-	camera.process_mode = Node.PROCESS_MODE_DISABLED if inventory.visible else Node.PROCESS_MODE_INHERIT
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if inventory.visible else Input.MOUSE_MODE_CAPTURED
+	visible = not visible
+	is_inventory_open = visible
 
-func add_item(item, preferred_slot: String = "Backpack") -> bool:	
-	if not item:
-		print_rich("[color=red][b]ERROR:[/b] Invalid Item![/color]")
+	_set_game_paused(is_inventory_open)
+	_set_mouse_mode(is_inventory_open)
+
+func _set_game_paused(paused: bool) -> void:
+	# Use Godot's built-in pause system
+	get_tree().paused = paused
+
+func _set_mouse_mode(show_cursor: bool) -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if show_cursor else Input.MOUSE_MODE_CAPTURED
+
+func add_item(item: Item, preferred_slot: String = "Backpack") -> bool:
+	if not _validate_item(item):
 		return false
 
-	if not item is Item:
-		print_rich("[color=red][b]ERROR:[/b] Item is not of type 'Item'. Actual type: " + item.get_class() + "[/color]")
+	# Try to stack with existing items first
+	if item.is_stackable():
+		var stacked_slot = _try_stack_item(item, preferred_slot)
+		if stacked_slot:
+			print("Stacked Item: " + item.name + " in " + preferred_slot)
+			_refresh_player_stats()
+			return true
+
+	# If can't stack, find empty slot
+	var slot_node = _get_next_empty_slot_node(preferred_slot)
+	if not slot_node:
+		push_error("No empty slots in " + preferred_slot)
 		return false
 
-	var next_slot_node = _get_next_empty_slot_node(preferred_slot)
-	if next_slot_node == null:
-		print_rich("[color=red][b]ERROR:[/b] No empty slots in " + preferred_slot + "![/color]")
-		return false
+	# Initialize stack size if not set
+	if item.stack_size <= 0:
+		item.stack_size = 1
 
-	next_slot_node.set_new_data(item)
-	
+	slot_node.set_new_data(item)
 	_refresh_player_stats()
 
-	var slot_number = int(next_slot_node.name.split("Slot")[1])
-	print_rich("[color=green][b]ADD ITEM:[/b][/color] [color=light_green]" + item.name + "[/color] to [color=light_blue]" + preferred_slot + " Slot" + str(slot_number) + "[/color]")
+	print("Added Item: " + item.name + " to " + preferred_slot)
 	return true
 
-func remove_item(item) -> bool:
+func _try_stack_item(item: Item, preferred_slot: String) -> SlotNode:
+	if not item.is_stackable():
+		return null
+
+	var section = inventory_sections.get(preferred_slot)
+	if not section:
+		return null
+
+	# Look for existing stacks of this item
+	for slot in section.get_children():
+		if not slot.item_resource:
+			continue
+
+		if slot.item_resource.can_stack_with(item) and not slot.item_resource.is_stack_full():
+			var remaining = slot.item_resource.add_to_stack(item.stack_size)
+			slot._update_stack_display()
+
+			# If we couldn't add everything, keep trying other slots
+			if remaining > 0:
+				item.stack_size = remaining
+				continue
+
+			return slot
+
+	return null
+
+func _validate_item(item: Resource) -> bool:
 	if not item:
-		print_rich("[color=red][b]ERROR:[/b] Invalid Item![/color]")
+		push_error("Cannot add null item")
 		return false
-
-	print_rich("[color=orange][b]REMOVE ITEM:[/b][/color] [color=light_green]" + item.item_resource.name + "[/color]")
-	item.delete_resource()
+	
+	if not item is Item:
+		push_error("Resource is not an Item: " + str(item.get_class()))
+		return false
+	
 	return true
 
-func _get_next_empty_slot_node(slot_type: String = "Backpack") -> Variant:
-	if slot_type in inv_dictionary:
-		for slot in inv_dictionary[slot_type].get_children():
-			if slot.texture == null: return slot
-	return null # No empty slots found
+func _get_next_empty_slot_node(slot_type: String = "Backpack") -> Node:
+	if not slot_type in inventory_sections:
+		push_error("Invalid slot type: " + slot_type)
+		return null
+	
+	var section = inventory_sections[slot_type]
+	for slot in section.get_children():
+		if slot.texture == null:
+			return slot
+	
+	return null
+
+func _refresh_player_stats() -> void:
+	var equipment_bonuses = _calculate_equipment_bonuses()
+	PlayerStats.update_equipment_stats(equipment_bonuses)
+	_update_stat_labels()
+
+func _calculate_equipment_bonuses() -> Dictionary:
+	var bonuses = { "health": 0, "strength": 0, "armor": 0 }
+	var equipment_slots = equip_left.get_children() + equip_right.get_children()
+	
+	for slot in equipment_slots:
+		var item = slot.item_resource
+		if not item:
+			continue
+		
+		bonuses.health += item.health
+		bonuses.strength += item.strength
+		bonuses.armor += item.armor
+	
+	return bonuses
+
+func _update_stat_labels() -> void:
+	if health_label:
+		health_label.text = "Health: %d" % PlayerStats.health
+	if ui_health_label:
+		ui_health_label.text = "Player Health: %d" % PlayerStats.health
+	if strength_label:
+		strength_label.text = "Strength: %d" % PlayerStats.strength
+	if armor_label:
+		armor_label.text = "Armor: %d" % PlayerStats.armor
+
+func remove_item(item_slot_node: Node) -> bool:
+	if not item_slot_node or not item_slot_node.item_resource:
+		push_error("Cannot remove invalid item")
+		return false
+		
+	var item_name = item_slot_node.item_resource.name
+	print("Removed item: " + item_name)
+	
+	item_slot_node.delete_resource()
+	_refresh_player_stats()
+	return true
 
 func _get_drag_data(at_position: Vector2) -> Variant:
 	var drag_slot_node = get_slot_node_at_position(at_position)
-	if drag_slot_node == null || drag_slot_node.texture == null: return
+
+	if not drag_slot_node or not drag_slot_node.texture:
+		currently_dragging_slot = null
+		return null
 
 	var drag_preview_node = drag_slot_node.duplicate()
 	drag_preview_node.custom_minimum_size = Vector2(60, 60)
 	set_drag_preview(drag_preview_node)
 
+	currently_dragging_slot = drag_slot_node
 	return drag_slot_node
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
+	if not data:
+		return false
+
 	var target_slot_node = get_slot_node_at_position(at_position)
 	var drag_item = data.item_resource
+	var is_over_trash = _is_over_trash(at_position)
+	var is_over_inventory_panel = inventory_panel.get_global_rect().has_point(at_position)
+
+	if is_over_trash:
+		trash.activate_swirl()
+	else:
+		trash.deactivate_swirl()
+
+	# Allow dropping on trash
+	if is_over_trash:
+		return true
+
+	# Allow dropping outside inventory panel (to world)
+	if not is_over_inventory_panel:
+		return true
+
+	# If no target slot, deny drop (item inside inventory but not on a slot)
+	if not target_slot_node:
+		return false
+
+	# Validate slot compatibility
+	return _can_item_go_in_slot(drag_item, target_slot_node) and _can_swap_items(data, target_slot_node)
+
+func _can_item_go_in_slot(item: Item, slot_node: Node) -> bool:
+	if not item or not slot_node:
+		return false
 	
-	var on_trash = _on_trash(at_position)
+	return _is_item_allowed_in_slot(item, slot_node)
+
+func _can_swap_items(drag_slot: Node, target_slot: Node) -> bool:
+	if not target_slot.item_resource:
+		return true
 	
-	if on_trash: trash.activate_swirl()
-	else: trash.deactivate_swirl()
-	
-	var item_allowed = _is_item_allowed(drag_item, target_slot_node)
-	
-	return (target_slot_node != null && item_allowed) || on_trash || not on_inventory
+	return _is_item_allowed_in_slot(target_slot.item_resource, drag_slot)
 
 func _drop_data(at_position: Vector2, drag_slot_node: Variant) -> void:
-	var on_trash = _on_trash(at_position)
-	
-	if on_trash:
-		trash.activate_poof()
-		remove_item(drag_slot_node)
-		trash.deactivate_swirl()
-	elif not on_inventory and not on_trash:
-		var spawned = _spawn_3d_item(drag_slot_node.item_resource)
-		if spawned: remove_item(drag_slot_node)
-	else:
-		var target_slot_node = get_slot_node_at_position(at_position)
-		if not target_slot_node: return
-		var target_resource = target_slot_node.item_resource
+	var is_over_trash = _is_over_trash(at_position)
+	var target_slot_node = get_slot_node_at_position(at_position)
+	var is_over_inventory_panel = inventory_panel.get_global_rect().has_point(at_position)
 
-		target_slot_node.set_new_data(drag_slot_node.item_resource)
-		drag_slot_node.set_new_data(target_resource)
-	
+	if is_over_trash:
+		# Drop on trash - delete item
+		_handle_trash_drop(drag_slot_node)
+	elif target_slot_node:
+		# Drop on valid inventory slot - swap/move items
+		_handle_slot_drop(at_position, drag_slot_node)
+	elif not is_over_inventory_panel:
+		# Drop outside inventory panel - drop to world
+		_handle_world_drop(drag_slot_node)
+	# else: Drop on empty area inside inventory - do nothing (item returns to original slot)
+
+	currently_dragging_slot = null
 	_refresh_player_stats()
 
+func _handle_trash_drop(drag_slot_node: Node) -> void:
+	trash.activate_poof()
+	remove_item(drag_slot_node)
+	trash.deactivate_swirl()
+
+func _handle_world_drop(drag_slot_node: Node) -> void:
+	if _spawn_3d_item(drag_slot_node.item_resource):
+		remove_item(drag_slot_node)
+
+func _handle_slot_drop(at_position: Vector2, drag_slot_node: Node) -> void:
+	var target_slot_node = get_slot_node_at_position(at_position)
+	if not target_slot_node:
+		return
+	
+	var target_item = target_slot_node.item_resource
+	var drag_item = drag_slot_node.item_resource
+	
+	target_slot_node.set_new_data(drag_item)
+	drag_slot_node.set_new_data(target_item)
+
 func _spawn_3d_item(item_resource: Item) -> bool:
-	var spawn_distance = 2.0
-	var spawn_position = player.global_position + player.global_basis.z * -spawn_distance
+	if not item_resource:
+		push_error("Cannot spawn null item")
+		return false
+
+	if not _ensure_player_found():
+		push_error("Player not found! Cannot calculate spawn position")
+		return false
+
+	if not world_node:
+		push_error("World node not found!")
+		return false
+
+	var spawn_position = _calculate_spawn_position()
+	var item_3D = Global.create_3d_item_node(item_resource, spawn_position)
 	
-	var random_offset = Vector3(randf_range(-0.5, 0.5), randf_range(0, 0.5), randf_range(-0.5, 0.5))
-	spawn_position += random_offset
+	if not item_3D:
+		push_error("Failed to create 3D Item Node: " + item_resource.name)
+		return false
 	
-	var item_3d = Global._create_3d_item_node(item_resource, spawn_position)
-	if not item_3d: return false
-	
-	world_node.add_child(item_3d)
-	print_rich("[color=green][b]SPAWNED 3D ITEM:[/b][/color] [color=light_green]" + item_resource.name + "[/color] at position [color=light_blue]" + str(spawn_position) + "[/color]")
+	world_node.add_child(item_3D)
+	print("Spawned 3D Item: %s at %s" % [item_resource.name, spawn_position])
 	return true
 
-func _refresh_player_stats() -> void:
-	var equip_stats = { "health": 0, "strength": 0, "armor": 0, }
+func _calculate_spawn_position() -> Vector3:
+	var base_position = player.global_position + player.global_basis.z * -SPAWN_DISTANCE
+	var random_offset = Vector3(
+		randf_range(-RANDOM_OFFSET_RANGE, RANDOM_OFFSET_RANGE),
+		randf_range(0, RANDOM_OFFSET_RANGE),
+		randf_range(-RANDOM_OFFSET_RANGE, RANDOM_OFFSET_RANGE)
+	)
 	
-	for slot in equip_left.get_children() + equip_right.get_children():
-		var item = slot.item_resource
-		if not item: continue
-		
-		equip_stats.health += item.health
-		equip_stats.strength += item.strength
-		equip_stats.armor += item.armor
-	
-	PlayerStats.update_equipment_stats(equip_stats)
-	
-	health_label.set_text("Health: " + str(PlayerStats.health))
-	strength_label.set_text("Strength: " + str(PlayerStats.strength))
-	armor_label.set_text("Armor: " + str(PlayerStats.armor))
+	return base_position + random_offset
 
-func get_slot_node_at_position(node_at_position: Vector2) -> Variant:
-	var all_slot_nodes = (backpack.get_children() + toolbar.get_children() + equip_left.get_children() + equip_right.get_children())
-
-	for node in all_slot_nodes:
-		var nodeRect = node.get_global_rect()
-		if nodeRect.has_point(node_at_position): return node
+func get_slot_node_at_position(position: Vector2) -> Variant:
+	var all_slots = _get_all_inventory_slots()
+	
+	for slot in all_slots:
+		if slot.get_global_rect().has_point(position):
+			return slot
 	
 	return null
 
-func _on_trash(at_position: Vector2) -> bool:
-	return trash.get_global_rect().has_point(at_position)
+func _get_all_inventory_slots() -> Array[Node]:
+	var all_slots: Array[Node] = []
+	
+	for section in inventory_sections.values():
+		all_slots.append_array(section.get_children())
+	
+	return all_slots
 
-func _is_item_allowed(item, slot_node) -> bool:
-	if slot_node == null: return false
-	
+func _is_over_trash(position: Vector2) -> bool:
+	return trash.get_global_rect().has_point(position)
+
+func _is_item_allowed_in_slot(item: Item, slot_node: Node) -> bool:
+	if not item or not slot_node:
+		return false
+
 	var slot_name = slot_node.get_slot_name()
-	var item_type = item.type
-	
-	var is_equipment_slot = "Equip" in slot_name
-	if not is_equipment_slot: return true
-	
-	var access_left_1 = slot_name == "EquipLeft1" && item_type == "Weapon"
-	var access_left_2 = slot_name == "EquipLeft2" && item_type == "Armor"
-	var access_left_3 = slot_name == "EquipLeft3" && item_type == "Armor"
-	
-	var access_right_1 = slot_name == "EquipRight1" && item_type == "Ring"
-	var access_right_2 = slot_name == "EquipRight2" && item_type == "Ring"
-	var access_right_3 = slot_name == "EquipRight3" && item_type == "Shoe"
-	
-	if access_left_1 || access_left_2 || access_left_3 || access_right_1 || access_right_2 || access_right_3:
+	var item_type = item.get_type_string()
+
+	if not "Equip" in slot_name:
 		return true
-	else: return false
+
+	var allowed_combinations = {
+		"EquipLeft1": ["Weapon"],
+		"EquipLeft2": ["Armor"],
+		"EquipLeft3": ["Armor"],
+
+		"EquipRight1": ["Ring"],
+		"EquipRight2": ["Ring"],
+		"EquipRight3": ["Shoe"],
+	}
+
+	if slot_name in allowed_combinations:
+		return item_type in allowed_combinations[slot_name]
+
+	return false
+
+func has_item_with_effect(effect_name: String) -> bool:
+	var all_slots = _get_all_inventory_slots()
+	
+	for slot in all_slots:
+		if slot.item_resource and slot.item_resource.use_effect == effect_name:
+			return true
+	
+	return false
+
+func use_revive_item() -> bool:
+	var all_slots = _get_all_inventory_slots()
+
+	for slot in all_slots:
+		if slot.item_resource and slot.item_resource.use_effect == "revive":
+			print("Using revive item: " + slot.item_resource.name)
+			slot.delete_resource()
+			_refresh_player_stats()
+			return true
+
+	return false
+
+func _on_item_used(item: Item, slot: SlotNode) -> void:
+	if not item:
+		return
+
+	var effect = item.use_effect
+
+	# Handle different item effects
+	match effect:
+		"revive":
+			_handle_revive_item(item, slot)
+		"drink":
+			_handle_drink_item(item, slot)
+		_:
+			# Generic consumable - just consume it if it's useable
+			if item.type == Item.ItemType.USEABLE and not effect.is_empty():
+				slot.decrement_stack()
+				_refresh_player_stats()
+
+func _handle_revive_item(item: Item, slot: SlotNode) -> void:
+	if PlayerStats.dead:
+		PlayerStats.revive()
+		slot.decrement_stack()
+		_refresh_player_stats()
+		print("Player revived using: " + item.name)
+	else:
+		push_warning("Cannot use revive item - player is not dead!")
+
+func _handle_drink_item(item: Item, slot: SlotNode) -> void:
+	if item.health > 0:
+		PlayerStats.increment_health(item.health)
+		slot.decrement_stack()
+		_refresh_player_stats()
+		print("Player drank: " + item.name + " (+%d health)" % item.health)
 
 func _on_texture_rect_mouse_entered() -> void:
-	on_inventory = true
+	is_inventory_open = true
 
 func _on_texture_rect_mouse_exited() -> void:
-	on_inventory = false
+	is_inventory_open = false
+
+func _on_player_health_changed(new_health: int) -> void:
+	if ui_health_label:
+		ui_health_label.text = "Player Health: %d" % new_health
