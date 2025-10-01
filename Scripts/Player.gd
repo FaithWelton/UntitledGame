@@ -15,12 +15,20 @@ class_name Player
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
+var player_meshes: Array[MeshInstance3D] = []
+var original_mesh_colors: Dictionary = {}  # Store original color for each mesh
+
 var inventory: Inventory
+var bullet_pool: BulletPool
+var camera_shake: CameraShake
 var objects_in_range: Array[Node3D] = []
 var camera_rotation: Vector2 = Vector2.ZERO
+var hit_flash_timer: float = 0.0
+var previous_health: int = 0
 
 func _ready() -> void:
 	add_to_group("player")
+	_find_player_meshes()
 	_find_inventory()
 	_initialize_player()
 	_setup_spring_arm()
@@ -28,6 +36,35 @@ func _ready() -> void:
 
 	PlayerStats.player_revived.connect(_revive)
 	PlayerStats.player_respawned.connect(_respawn)
+	PlayerStats.health_changed.connect(_on_player_health_changed)
+	PlayerStats.player_died.connect(_on_player_died)
+
+	# Defer finding systems to ensure scene tree is ready
+	call_deferred("_find_bullet_pool")
+	call_deferred("_find_camera_shake")
+
+	# Initialize previous health
+	previous_health = PlayerStats.health
+
+func _find_player_meshes() -> void:
+	# Find all MeshInstance3D children and store their original colors
+	for child in get_children():
+		if child is MeshInstance3D:
+			player_meshes.append(child)
+			print("Found player mesh: ", child.name)
+
+			# Store the original color from the material
+			var material = child.get_surface_override_material(0)
+			if not material:
+				material = child.mesh.surface_get_material(0)
+
+			if material and material is BaseMaterial3D:
+				original_mesh_colors[child.name] = material.albedo_color
+				print("  Stored original color for ", child.name, ": ", material.albedo_color)
+			else:
+				# Default to white if no material
+				original_mesh_colors[child.name] = Color.WHITE
+				print("  No material, defaulting to white for ", child.name)
 
 func _find_inventory() -> void:
 	var inventories = get_tree().get_nodes_in_group("inventory")
@@ -37,6 +74,34 @@ func _find_inventory() -> void:
 		return
 
 	inventory = inventories[0]
+
+func _find_bullet_pool() -> void:
+	var pools = get_tree().get_nodes_in_group("bullet_pool")
+
+	if pools.is_empty():
+		push_warning("Player: No bullet pool found! Bullets will be instantiated normally.")
+		return
+
+	bullet_pool = pools[0]
+
+func _find_camera_shake() -> void:
+	var shakes = get_tree().get_nodes_in_group("camera_shake")
+
+	if not shakes.is_empty():
+		camera_shake = shakes[0]
+
+func _on_player_health_changed(new_health: int) -> void:
+	# Only trigger effects when taking damage (health decreasing)
+	if new_health < previous_health:
+		# Trigger camera shake
+		if camera_shake:
+			camera_shake.add_trauma(0.3)
+
+		# Trigger damage flash
+		_flash_damage()
+
+	# Update previous health for next comparison
+	previous_health = new_health
 
 func _setup_spring_arm() -> void:
 	if not spring_arm:
@@ -200,20 +265,91 @@ func _remove_object(obj: Node3D) -> void:
 	objects_in_range.erase(obj)
 
 func shoot_bullet() -> void:
-	const BULLET_SCENE = preload("res://Projectiles/Bullet.tscn")
-	var bullet = BULLET_SCENE.instantiate()
+	var bullet: Bullet = null
 
-	projectile_spawner.add_child(bullet)
-	bullet.global_transform = projectile_spawner.global_transform
+	if bullet_pool:
+		bullet = bullet_pool.get_bullet()
+		if bullet:
+			# Bullet is already a child of the pool, just set its transform
+			bullet.global_transform = projectile_spawner.global_transform
+	else:
+		const BULLET_SCENE = preload("res://Projectiles/Bullet.tscn")
+		bullet = BULLET_SCENE.instantiate()
+		projectile_spawner.add_child(bullet)
+		bullet.global_transform = projectile_spawner.global_transform
 
-	# Initialize bullet with shooter reference and damage based on player strength
+	if not bullet:
+		return
+
 	var bullet_damage = max(10, PlayerStats.strength / 5)
-	bullet.initialize(self, bullet_damage)
+	bullet.initialize(self, bullet_damage, bullet_pool)
 
 	shoot_timer.start()
 
 func _physics_process(delta) -> void:
 	_handle_movement(delta)
+	_update_damage_flash(delta)
+
+func _flash_damage() -> void:
+	if player_meshes.is_empty():
+		print("No player meshes found for damage flash!")
+		return
+
+	print("Flashing red!")
+	hit_flash_timer = 0.2  # Flash duration
+	_set_player_color(Color.RED)
+
+func _update_damage_flash(delta: float) -> void:
+	if hit_flash_timer > 0:
+		hit_flash_timer -= delta
+		if hit_flash_timer <= 0:
+			_restore_original_colors()
+
+func _set_player_color(color: Color) -> void:
+	print("Setting all meshes to color: ", color)
+	for mesh_instance in player_meshes:
+		_set_mesh_color(mesh_instance, color)
+
+func _set_mesh_color(mesh_instance: MeshInstance3D, color: Color) -> void:
+	if not mesh_instance or not mesh_instance.mesh:
+		print("Skipping invalid mesh")
+		return
+
+	print("Processing mesh: ", mesh_instance.name)
+	print("  Surface count: ", mesh_instance.mesh.get_surface_count())
+
+	var material = mesh_instance.get_surface_override_material(0)
+	print("  Override material: ", material)
+
+	if not material:
+		material = mesh_instance.mesh.surface_get_material(0)
+		print("  Base material: ", material)
+		if material:
+			material = material.duplicate()
+			mesh_instance.set_surface_override_material(0, material)
+			print("  Created material duplicate for: ", mesh_instance.name)
+		else:
+			print("  No material found for: ", mesh_instance.name)
+			return
+
+	if material:
+		# Try StandardMaterial3D
+		if material is StandardMaterial3D:
+			material.albedo_color = color
+			print("Set StandardMaterial3D color for: ", mesh_instance.name)
+		# Try BaseMaterial3D (parent class)
+		elif material is BaseMaterial3D:
+			material.albedo_color = color
+			print("Set BaseMaterial3D color for: ", mesh_instance.name)
+		# Try ShaderMaterial
+		elif material is ShaderMaterial:
+			if material.shader and material.shader.has_param("albedo"):
+				material.set_shader_parameter("albedo", color)
+				print("Set ShaderMaterial color for: ", mesh_instance.name)
+			else:
+				print("ShaderMaterial doesn't have albedo param for: ", mesh_instance.name)
+		else:
+			print("Unknown material type for ", mesh_instance.name, ": ", material.get_class())
 
 func _handle_movement(delta) -> void:
 	if PlayerStats.dead:
@@ -279,13 +415,22 @@ func _die() -> void:
 
 func _revive() -> void:
 	set_physics_process(true)
+	_restore_original_colors()
 	# TODO: Play Revival Animation
-	# TODO: Restore Player Appearance
 
 func _respawn() -> void:
 	set_physics_process(true)
+	_restore_original_colors()
 	# TODO: Play Respawn Animation
-	# TODO: Restore Player Appearance
+
+func _restore_original_colors() -> void:
+	for mesh_instance in player_meshes:
+		var original_color = original_mesh_colors.get(mesh_instance.name, Color.WHITE)
+		_set_mesh_color(mesh_instance, original_color)
+
+func _on_player_died() -> void:
+	print("Player died - setting dead color")
+	_set_player_color(Color(0.3, 0.35, 0.3))  # Dark grayish-green for dead/decomposing look
 
 func _on_interaction_area_body_entered(body: Node3D) -> void:
 	if body in get_tree().get_nodes_in_group("object"):

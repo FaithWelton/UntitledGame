@@ -6,12 +6,16 @@ signal item_used(item: Item, slot: SlotNode)
 @export var item_resource: Item
 
 @onready var stack_label: Label = $StackLabel
+@onready var rarity_border: Panel = $RarityBorder
 
 var tooltip: ItemTooltip
 
 func _ready() -> void:
 	if stack_label:
 		stack_label.hide()
+
+	if rarity_border:
+		rarity_border.hide()
 
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -44,10 +48,13 @@ func set_new_data(resource: Item) -> void:
 		texture = item_resource.icon
 		_update_item_inventory_data()
 		_update_stack_display()
+		_update_rarity_border()
 	else:
 		texture = null
 		if stack_label:
 			stack_label.hide()
+		if rarity_border:
+			rarity_border.hide()
 
 func _update_stack_display() -> void:
 	if not item_resource or not stack_label:
@@ -103,6 +110,19 @@ func delete_resource() -> void:
 	item_resource = null
 	if stack_label:
 		stack_label.hide()
+	if rarity_border:
+		rarity_border.hide()
+
+func _update_rarity_border() -> void:
+	if not item_resource or not rarity_border:
+		return
+
+	var style = rarity_border.get_theme_stylebox("panel")
+	if style is StyleBoxFlat:
+		var stylebox = style.duplicate() as StyleBoxFlat
+		stylebox.border_color = item_resource.get_rarity_color()
+		rarity_border.add_theme_stylebox_override("panel", stylebox)
+		rarity_border.show()
 
 func decrement_stack(amount: int = 1) -> bool:
 	if not item_resource:

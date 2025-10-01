@@ -5,10 +5,12 @@ const ATTACK_DURATION: float = 1.0
 const ATTACK_COOLDOWN: float = 10.0
 const KNOCKBACK_FORCE: float = 10.0
 const UPWARD_FORCE_RANGE: Vector2 = Vector2(1.0, 5.0)
+const MOB_SEPARATION_DISTANCE: float = 1.5
+const SEPARATION_FORCE: float = 2.0
 
 @export var speed_range: Vector2 = Vector2(1.0, 3.0)
 @export var max_health: int = 30
-@export var damage: int = 100
+@export var damage: int = 10
 @export var ai_type: String = "hit_and_run" # "aggressive" | "hit_and_run" | "coward"
 @export var flee_health_threshold: int = 1
 
@@ -136,7 +138,11 @@ func should_start_attack() -> bool:
 
 func _chase_player() -> void:
 	var direction = get_direction_to_player()
-	linear_velocity = direction * speed
+	var separation = _get_separation_vector()
+
+	# Combine chase direction with separation from other mobs
+	var final_direction = (direction + separation * SEPARATION_FORCE).normalized()
+	linear_velocity = final_direction * speed
 
 func _retreat_from_player() -> void:
 	# Slow Retreat
@@ -186,8 +192,19 @@ func take_damage(amount: int = 1) -> void:
 	mob_model.hurt()
 	health = max(0, health - amount)
 
+	_spawn_damage_number(amount)
+
 	if health <= 0:
 		_die()
+
+func _spawn_damage_number(damage: int) -> void:
+	const DAMAGE_NUMBER_SCENE = preload("res://UI/DamageNumber.tscn")
+	var damage_number = DAMAGE_NUMBER_SCENE.instantiate()
+	get_tree().root.add_child(damage_number)
+
+	# Position slightly above the mob
+	var spawn_pos = global_position + Vector3(0, 1.5, 0)
+	damage_number.initialize(damage, spawn_pos)
 
 func _die() -> void:
 	set_physics_process(false)
@@ -263,8 +280,26 @@ func get_direction_to_player() -> Vector3:
 func get_direction_away_from_player() -> Vector3:
 	if not player:
 		return Vector3.ZERO
-	
+
 	var direction = (global_position - player.global_position).normalized()
 	direction.y = 0.0
-	
+
 	return direction
+
+func _get_separation_vector() -> Vector3:
+	var separation = Vector3.ZERO
+	var nearby_mobs = get_tree().get_nodes_in_group("mob")
+
+	for other_mob in nearby_mobs:
+		if other_mob == self or not is_instance_valid(other_mob):
+			continue
+
+		var distance = global_position.distance_to(other_mob.global_position)
+		if distance < MOB_SEPARATION_DISTANCE and distance > 0:
+			var push_away = (global_position - other_mob.global_position).normalized()
+			push_away.y = 0  # Keep on same plane
+			# Stronger separation when closer
+			var strength = 1.0 - (distance / MOB_SEPARATION_DISTANCE)
+			separation += push_away * strength
+
+	return separation.normalized() if separation.length() > 0 else Vector3.ZERO

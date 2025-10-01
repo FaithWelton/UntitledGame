@@ -8,12 +8,21 @@ enum ItemType {
 	INTERACTABLE
 }
 
+enum Rarity {
+	COMMON,
+	UNCOMMON,
+	RARE,
+	EPIC,
+	LEGENDARY
+}
+
 @export_group("Basic Info")
 @export var name: String = ""
 @export_multiline var description: String = ""
 @export var icon: CompressedTexture2D
 @export var use_effect: String = ""
 @export var type: ItemType = ItemType.USEABLE
+@export var rarity: Rarity = Rarity.COMMON
 
 @export_group("Stats")
 @export var health: int = 0
@@ -65,3 +74,33 @@ func is_stack_full() -> bool:
 
 func is_stack_empty() -> bool:
 	return stack_size <= 0
+
+func get_rarity_string() -> String:
+	match rarity:
+		Rarity.COMMON:
+			return "Common"
+		Rarity.UNCOMMON:
+			return "Uncommon"
+		Rarity.RARE:
+			return "Rare"
+		Rarity.EPIC:
+			return "Epic"
+		Rarity.LEGENDARY:
+			return "Legendary"
+		_:
+			return "Common"
+
+func get_rarity_color() -> Color:
+	match rarity:
+		Rarity.COMMON:
+			return Color(0.6, 0.6, 0.6)  # Gray
+		Rarity.UNCOMMON:
+			return Color(0.2, 0.8, 0.2)  # Green
+		Rarity.RARE:
+			return Color(0.2, 0.5, 1.0)  # Blue
+		Rarity.EPIC:
+			return Color(0.7, 0.2, 1.0)  # Purple
+		Rarity.LEGENDARY:
+			return Color(1.0, 0.6, 0.0)  # Orange/Gold
+		_:
+			return Color(0.6, 0.6, 0.6)  # Default gray

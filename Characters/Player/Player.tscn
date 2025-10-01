@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://4ai6vir54dk"]
+[gd_scene load_steps=9 format=3 uid="uid://4ai6vir54dk"]
 
 [ext_resource type="Script" uid="uid://bhtrehl6sxnxb" path="res://Scripts/Player.gd" id="1_l8h54"]
+[ext_resource type="Script" uid="uid://v4sxf3a36acd" path="res://Scripts/CameraShake.gd" id="2_6mep6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
 albedo_color = Color(0.0509804, 1, 0, 1)
@@ -8,7 +9,10 @@ albedo_color = Color(0.0509804, 1, 0, 1)
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_h2yge"]
 material = SubResource("StandardMaterial3D_0xm2m")
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6mep6"]
+
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_7dm0k"]
+material = SubResource("StandardMaterial3D_6mep6")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ig7tw"]
 
@@ -49,6 +53,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.726414, 0)
 spring_length = 6.0
 
 [node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+
+[node name="CameraShake" type="Node" parent="SpringArm3D/Camera3D" node_paths=PackedStringArray("camera")]
+script = ExtResource("2_6mep6")
+camera = NodePath("..")
 
 [connection signal="body_entered" from="InteractionArea" to="." method="_on_interaction_area_body_entered"]
 [connection signal="body_exited" from="InteractionArea" to="." method="_on_interaction_area_body_exited"]

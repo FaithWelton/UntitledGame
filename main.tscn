@@ -6,10 +6,10 @@
 [ext_resource type="PackedScene" uid="uid://clknn5g32rxf2" path="res://Environment/Environment.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bwqg1ob5ouaev" path="res://UI/Inventory.tscn" id="4_1bvp3"]
 [ext_resource type="Script" uid="uid://dv75mvpjsh4ig" path="res://Scripts/DeathDialog.gd" id="4_kek77"]
-[ext_resource type="Script" uid="uid://dngfcnrwb83y6" path="res://Scripts/ItemTooltip.gd" id="5_4c57u"]
 [ext_resource type="PackedScene" uid="uid://b835apd0x1sua" path="res://Items/ball.tscn" id="6_7mycd"]
 [ext_resource type="PackedScene" uid="uid://1suubji6u6uw" path="res://Characters/Mob/Mob.tscn" id="7_272bh"]
 [ext_resource type="PackedScene" uid="uid://st3sqvn8803" path="res://Characters/Spawner/MobSpawner.tscn" id="8_5vw27"]
+[ext_resource type="Script" uid="uid://dr4du3v8f582o" path="res://Scripts/BulletPool.gd" id="10_4c57u"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_272bh"]
 line_spacing = 1.0
@@ -26,48 +26,27 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("2_5vw27")
 
 [node name="Inventory" parent="UI" instance=ExtResource("4_1bvp3")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="EnemyStatsLabel" type="MarginContainer" parent="UI"]
-layout_mode = 0
-offset_left = 25.0
-offset_top = 24.0
-offset_right = 244.0
-offset_bottom = 42.0
-
-[node name="LiveEnemies" type="Label" parent="UI/EnemyStatsLabel"]
-layout_mode = 2
-size_flags_vertical = 0
-text = "Live Enemies:"
-label_settings = SubResource("LabelSettings_272bh")
-vertical_alignment = 1
-uppercase = true
-
-[node name="PlayerStatsLabel" type="MarginContainer" parent="UI"]
-layout_mode = 0
-offset_left = 25.0
-offset_top = 51.0
-offset_right = 244.0
-offset_bottom = 69.0
-
-[node name="Health" type="Label" parent="UI/PlayerStatsLabel"]
-layout_mode = 2
-size_flags_vertical = 0
-text = "Player Health:"
-label_settings = SubResource("LabelSettings_272bh")
-vertical_alignment = 1
-uppercase = true
-
 [node name="DeathDialog" type="Panel" parent="UI"]
-layout_mode = 0
-offset_left = 490.0
-offset_top = 337.0
-offset_right = 1042.0
-offset_bottom = 561.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -276.0
+offset_top = -112.0
+offset_right = 276.0
+offset_bottom = 112.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("4_kek77")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/DeathDialog"]
@@ -105,30 +84,32 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 text = "Respawn"
 
-[node name="ItemTooltip" type="PanelContainer" parent="UI" groups=["item_tooltip"]]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -104.0
-offset_right = 1.0
-grow_vertical = 0
-script = ExtResource("5_4c57u")
+[node name="Stats" type="VBoxContainer" parent="UI"]
+layout_mode = 0
+offset_right = 313.0
+offset_bottom = 246.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/ItemTooltip"]
+[node name="LiveEnemies" type="Label" parent="UI/Stats"]
 layout_mode = 2
+size_flags_vertical = 0
+text = "Live Enemies:"
+label_settings = SubResource("LabelSettings_272bh")
+vertical_alignment = 1
+uppercase = true
 
-[node name="ItemName" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+[node name="Health" type="Label" parent="UI/Stats"]
 layout_mode = 2
+size_flags_vertical = 0
+text = "Player Health:"
+label_settings = SubResource("LabelSettings_272bh")
+uppercase = true
 
-[node name="ItemType" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
+[node name="BulletsFired" type="Label" parent="UI/Stats"]
 layout_mode = 2
-
-[node name="Description" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
-layout_mode = 2
-
-[node name="Stats" type="Label" parent="UI/ItemTooltip/VBoxContainer"]
-layout_mode = 2
+size_flags_vertical = 0
+text = "Bullets Fired:"
+label_settings = SubResource("LabelSettings_272bh")
+uppercase = true
 
 [node name="Environment" parent="." instance=ExtResource("3_1bvp3")]
 
@@ -148,3 +129,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.20205, 0.55, -0.689815)
 [node name="MobSpawner" parent="." instance=ExtResource("8_5vw27")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.417, 0.0499992, -8.3417)
 mob_to_spawn = ExtResource("7_272bh")
+
+[node name="BulletPool" type="Node" parent="."]
+script = ExtResource("10_4c57u")

@@ -10,6 +10,7 @@ description = "It bounces."
 icon = ExtResource("1_6aq0n")
 use_effect = "Bounce"
 type = 3
+rarity = 3
 health = 0
 strength = 0
 armor = 0

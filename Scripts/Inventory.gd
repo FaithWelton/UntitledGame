@@ -234,23 +234,23 @@ func _refresh_player_stats() -> void:
 func _calculate_equipment_bonuses() -> Dictionary:
 	var bonuses = { "health": 0, "strength": 0, "armor": 0 }
 	var equipment_slots = equip_left.get_children() + equip_right.get_children()
-	
+
 	for slot in equipment_slots:
 		var item = slot.item_resource
 		if not item:
 			continue
-		
+
 		bonuses.health += item.health
 		bonuses.strength += item.strength
 		bonuses.armor += item.armor
-	
+
 	return bonuses
 
 func _update_stat_labels() -> void:
 	if health_label:
-		health_label.text = "Health: %d" % PlayerStats.health
+		health_label.text = "Health: %d/%d" % [PlayerStats.health, PlayerStats.max_health]
 	if ui_health_label:
-		ui_health_label.text = "Player Health: %d" % PlayerStats.health
+		ui_health_label.text = "Player Health: %d/%d" % [PlayerStats.health, PlayerStats.max_health]
 	if strength_label:
 		strength_label.text = "Strength: %d" % PlayerStats.strength
 	if armor_label:
@@ -504,4 +504,4 @@ func _on_texture_rect_mouse_exited() -> void:
 
 func _on_player_health_changed(new_health: int) -> void:
 	if ui_health_label:
-		ui_health_label.text = "Player Health: %d" % new_health
+		ui_health_label.text = "Player Health: %d/%d" % [new_health, PlayerStats.max_health]

@@ -10,44 +10,56 @@ signal stats_updated(stats: Dictionary)
 
 @export_group("Base Stats")
 @export var level: int = 1
-@export var base_health: int = 500
-@export var max_health: int = 500 # Not affected by equipment bonuses
+@export var base_health: int = 100
+@export var base_max_health: int = 500
 @export var base_strength: int = 50
 @export var base_armor: int = 100
 
+@export_group("Equipment Bonuses")
+var equipment_health: int = 0
+var equipment_strength: int = 0
+var equipment_armor: int = 0
+
 @export_group("Current Stats") # Base + Equipment
-@export var health: int = 500
+@export var health: int = 100
+@export var max_health: int = 500
 @export var strength: int = 50
 @export var armor: int = 100
 @export var dead: bool = false
 
 func update_equipment_stats(equipment_bonuses: Dictionary) -> void:
-	var old_health = health
+	var old_max_health = max_health
 	var old_strength = strength
 	var old_armor = armor
-	
-	health = base_health + equipment_bonuses.get("health", 0)
-	strength = base_strength + equipment_bonuses.get("strength", 0)
-	armor = base_armor + equipment_bonuses.get("armor", 0)
-	
+
+	# Store equipment bonuses
+	equipment_health = equipment_bonuses.get("health", 0)
+	equipment_strength = equipment_bonuses.get("strength", 0)
+	equipment_armor = equipment_bonuses.get("armor", 0)
+
+	# Calculate new stats (base + equipment)
+	max_health = base_max_health + equipment_health
+	strength = base_strength + equipment_strength
+	armor = base_armor + equipment_armor
+
+	# Make sure current health doesn't exceed new max
 	health = min(max_health, health)
-	
-	if health != old_health:
-		health_changed.emit(health)
-	
+
+	# Emit signals for changed stats
+	health_changed.emit(health)
+
 	if strength != old_strength:
 		strength_changed.emit(strength)
-	
+
 	if armor != old_armor:
 		armor_changed.emit(armor)
-	
+
 	stats_updated.emit(get_current_stats())
 
 func increment_health(amount: int) -> void:
 	if dead:
 		return
-	
-	var effective_max = max_health + 200 # Allow a little overheal
+
 	health = min(max_health, health + amount)
 	health_changed.emit(health)
 
@@ -86,6 +98,7 @@ func has_revive_item() -> bool:
 
 func get_base_stats() -> Variant:
 	return {
+		"max_health": base_max_health,
 		"health": base_health,
 		"strength": base_strength,
 		"armor": base_armor,
@@ -94,6 +107,14 @@ func get_base_stats() -> Variant:
 func get_current_stats() -> Variant:
 	return {
 		"health": health,
+		"max_health": max_health,
 		"strength": strength,
 		"armor": armor,
+	}
+
+func get_equipment_bonuses() -> Dictionary:
+	return {
+		"health": equipment_health,
+		"strength": equipment_strength,
+		"armor": equipment_armor,
 	}

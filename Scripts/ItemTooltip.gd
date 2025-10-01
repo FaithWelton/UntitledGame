@@ -23,13 +23,15 @@ func hide_tooltip() -> void:
 	hide()
 
 func _update_tooltip_content(item: Item) -> void:
-	# Item name
+	# Item name with rarity color
 	if item_name_label:
 		item_name_label.text = item.name
+		item_name_label.modulate = item.get_rarity_color()
 
-	# Item type
+	# Item type and rarity
 	if item_type_label:
-		item_type_label.text = item.get_type_string()
+		item_type_label.text = "%s - %s" % [item.get_type_string(), item.get_rarity_string()]
+		item_type_label.modulate = item.get_rarity_color()
 
 	# Description
 	if description_label:
