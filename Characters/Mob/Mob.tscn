@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://1suubji6u6uw"]
 
 [ext_resource type="PackedScene" uid="uid://b2fcpdxx3fk7l" path="res://Characters/Mob/Bat/BatModel.tscn" id="1_31bnx"]
-[ext_resource type="Script" uid="uid://dbpthr3vid5jq" path="res://Scripts/Mob.gd" id="1_fksse"]
+[ext_resource type="Script" uid="uid://e0hduhc0hgwy" path="res://Scripts/Bat.gd" id="1_fksse"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_a7ual"]
 radius = 0.330882
@@ -12,7 +12,7 @@ height = 0.819634
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_fksse"]
 height = 0.52417
-radius = 0.79834
+radius = 0.59668
 
 [node name="Bat" type="RigidBody3D"]
 gravity_scale = 0.0
@@ -22,6 +22,7 @@ script = ExtResource("1_fksse")
 
 [node name="bat_model" parent="." instance=ExtResource("1_31bnx")]
 unique_name_in_owner = true
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="Timer" type="Timer" parent="."]
 unique_name_in_owner = true
@@ -29,15 +30,15 @@ wait_time = 1.25
 one_shot = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, -2.9676e-08, 0, 2.98468e-08, 1, 2.37037e-11, 2.32831e-10, 1.49214e-13, 1, 2.98023e-08, 0, 0)
+transform = Transform3D(0.5, -1.49234e-08, -1.16416e-10, 1.49234e-08, 0.5, -7.46105e-14, 1.16416e-10, 7.4607e-14, 0.5, 2.98023e-08, 0, 0)
 shape = SubResource("SphereShape3D_a7ual")
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.636926, -0.770925, 0, 0.770925, 0.636926, 0, 0, 0, 1, -0.464237, 0.132535, 0)
+transform = Transform3D(0.318463, -0.385462, 0, 0.385462, 0.318463, 0, 0, 0, 0.5, -0.219939, 0.0511215, 0)
 shape = SubResource("CapsuleShape3D_lu3ud")
 
 [node name="CollisionShape3D3" type="CollisionShape3D" parent="."]
-transform = Transform3D(-0.636925, 0.770922, 0.00239101, 0.770925, 0.636926, 1.86028e-08, -0.00152284, 0.0018433, -0.999997, 0.445565, 0.168163, 0)
+transform = Transform3D(-0.318462, 0.385461, 0.00119551, 0.385462, 0.318463, 2.64276e-08, -0.000761428, 0.000921661, -0.499999, 0.215427, 0.0769638, 0)
 shape = SubResource("CapsuleShape3D_lu3ud")
 
 [node name="InteractionArea" type="Area3D" parent="."]
@@ -48,4 +49,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.467378, 0)
 shape = SubResource("CylinderShape3D_fksse")
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
-[connection signal="body_entered" from="InteractionArea" to="." method="_on_interaction_area_body_entered"]

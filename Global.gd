@@ -40,7 +40,9 @@ func get_item_by_key(key):
 		return null
 
 func create_3d_item_node(item_resource: Item, spawn_position: Vector3) -> Node3D:
-	var scene_path = "res://Items/" + item_resource.name.to_lower() + ".tscn"
+	# Convert display name to PascalCase filename (e.g., "Health Potion" -> "HealthPotion.tscn")
+	var scene_name = item_resource.name.replace(" ", "")
+	var scene_path = "res://Items/" + scene_name + ".tscn"
 	if not FileAccess.file_exists(scene_path):
 		push_warning(item_resource.name + " scene file not found! Loading Generic")
 		return create_generic_item(item_resource, spawn_position)
@@ -53,7 +55,7 @@ func create_3d_item_node(item_resource: Item, spawn_position: Vector3) -> Node3D
 	return scene_instance
 
 func create_generic_item(item_resource: Item, spawn_position: Vector3) -> Node3D:
-	var scene_path = "res://Items/generic_item.tscn"
+	var scene_path = "res://Items/GenericItem.tscn"
 	if not FileAccess.file_exists(scene_path):
 		push_error("Generic item scene not found: " + scene_path)
 		return null

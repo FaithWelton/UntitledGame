@@ -22,54 +22,143 @@ Initial changes:
 
 ### Combat System
 - **Bullet/Projectile System**
+  - Object pooling for performance optimization
   - Damage scaling based on player strength
   - Team-based collision filtering (no friendly fire)
   - Shooter tracking to prevent self-hits
   - Configurable speed, range, and damage
+- **Critical Hit System**
+  - Configurable crit chance and multiplier
+  - Visual feedback with "CRIT!" text and camera shake
+  - Equipment bonuses affect crit stats
 
 ### Mob/Enemy System
-- **AI Behaviors:** Multiple AI types (aggressive, hit_and_run, coward)
+- **Extensible Architecture:**
+  - Base `Mob` class with common functionality (health, attack, AI, loot)
+  - Specialized `Bat` class with flying behavior extending base
+  - Easy to add new mob types by extending base class
+- **AI Behaviors:**
+  - Multiple AI types: aggressive, hit_and_run, coward
+  - Each mob type defines its own available AI types
+  - Bats use aggressive and hit_and_run (no coward behavior)
+- **Flying Behavior (Bats):**
+  - Height control with hover and max/min height limits
+  - Orbiting attack pattern around player
+  - Randomized orbit direction and speed for organic movement
+  - Vertical avoidance - bats fly over/under each other
+  - Preferred orbit angles for even distribution around player
+  - Boundary detection keeps mobs on platform (avoids falling off edges)
+- **Separation/Flocking:**
+  - Mobs avoid crowding each other
+  - Separation forces prevent stacking
+  - Priority-based movement (boundary > separation > attack)
+- **Randomized Loot System:**
+  - Percentage-based drop chances with rarity support
+  - Configurable quantity ranges (e.g., 1-2 health potions)
+  - LootTable class for easy loot configuration
+  - Safe loot spawning (spawns near player if mob falls off map)
 - **Dynamic Stats:** Randomized speed, configurable health and damage
-- **Loot Drops:** Mobs drop items on death
-- **Mob Spawner:** Configurable spawner with AI type selection
+- **Mob Spawner:** Automatic spawning with configurable timers
 
 ### Inventory System
-- **Item Stacking:** Items with max_stack_size > 1 automatically stack
+- **Item Stacking:**
+  - Items with max_stack_size > 1 automatically stack
+  - Drag stacks onto compatible items to combine
+  - Stack splitting with Shift+Click (choose amount with slider)
+  - Proper stack validation (same name and type required)
 - **Equipment Slots:** Dedicated slots for weapons, armor, and accessories
 - **Item Validation:** Type-checking prevents wrong items in equipment slots
 - **Drag & Drop:**
   - Move/swap items between slots
-  - Drop items outside inventory to spawn in world
+  - Swap stacks with single items in either direction
+  - Drop items outside inventory to spawn all items in stack
   - Drop items on trash to delete
-- **Item Tooltips:** (In Progress) Hover tooltips showing item stats and info
+- **Item Tooltips:** Hover tooltips showing item stats, rarity, and description
 
 ### Item System
 - **Item Types:** Weapon, Armor, Useable, Interactable
+- **Rarity System:** Common, Uncommon, Rare, Epic, Legendary with color-coded borders
 - **Stackable Items:** Configurable max stack size per item
 - **Item Effects:**
-  - Health potions (drink effect)
-  - Revive potions (revive on death)
-  - Equipment stat bonuses (health, strength, armor)
+  - Health potions (drink effect, restores 50 HP)
+  - Revive potions (revive on death, rare drop)
+  - Equipment stat bonuses (health, strength, armor, crit chance, crit multiplier)
+- **3D Item Models:**
+  - Health Potion: Red glowing transparent bottle with metallic neck
+  - Revive Potion: Purple/pink glowing bottle with golden neck (brighter to show rarity)
+  - Custom materials with emission effects for glowing liquid
 - **PickupItem Base Class:** Shared functionality for all world items
 
 ### Player Systems
-- **Movement:** Third-person movement with camera-relative controls
-- **Combat:** Shooting with configurable fire rate
-- **Stats System:** Health, strength, armor
+- **Movement:**
+  - Third-person movement with camera-relative controls
+  - Swimming/water mechanics with enhanced jump force in water
+  - Can jump out of hazard zones
+- **Combat:** Shooting with configurable fire rate and critical hits
+- **Stats System:**
+  - Base stats: Health, strength, armor, crit chance, crit multiplier
+  - Equipment bonuses modify base stats
+  - Dynamic stat updates when equipping/unequipping items
 - **Death/Respawn:**
+  - Context-aware death messages based on death cause:
+    - "You fell off the edge!" (falling)
+    - "You were defeated in battle!" (combat)
+    - "You burned in lava!" (lava hazard)
+    - "You were swallowed by quicksand!" (quicksand hazard)
   - Death dialog with revive and respawn options
-  - Revive items can bring player back to life
+  - Revive items bring player back to safe position if died from falling
+  - Respawn returns player to level start and clears all enemies
   - Movement disabled during death
 - **Interaction:** Pick up items from world
+
+### Environment/Hazard System
+- **DeathZone/Hazard Areas:**
+  - Configurable hazard types: Water, Lava, Quicksand, Void
+  - Each hazard has unique physics and damage behavior
+- **Water Hazard:**
+  - Buoyancy forces keep player and items floating
+  - Items drift toward shore (center)
+  - Player can swim and jump out
+  - No damage
+- **Lava Hazard:**
+  - Reduced buoyancy (sinks more than water)
+  - Damage over time (10 HP/second by default)
+  - Items float and drift to shore
+- **Quicksand Hazard:**
+  - Pulls player downward
+  - Heavy drag on movement
+  - Damage when fully submerged
+  - Items sink
+- **Void Hazard:**
+  - Instant death for player
+  - Mobs drop loot safely, items destroyed
+- **Safety Features:**
+  - Mobs avoid hazard boundaries automatically
+  - Items that fall off respawn at surface or drift to shore
+  - Loot from off-map mobs spawns near player
 
 ### UI/UX
 - **Inventory UI:**
   - Backpack, toolbar, and equipment slots
   - Stack count display on items
+  - Rarity-colored borders on items
   - Visual feedback for dragging
   - Game pauses when inventory is open
+- **Main Menu:**
+  - New Game (automatically finds next save slot)
+  - Continue (loads most recent save)
+  - Load Game (choose from save slots)
+  - Manage Saves (view and delete saves)
+- **Pause Menu:**
+  - Save/Load game functionality
+  - Quick save (F5) and quick load (F6) shortcuts
+  - Overwrite confirmation when all save slots are full
 - **Death Dialog:** Modal dialog with revive/respawn options
-- **Stats Display:** Live enemy count, player health/strength/armor
+- **Stats Display:** Live enemy count, player health, bullets fired
+- **Save/Load System:**
+  - 10 save slots with timestamp-based naming
+  - Saves player position, stats, inventory, and game state
+  - Save management UI to view and delete saves
 
 ### Code Quality Improvements
 - **Refactored Architecture:**
@@ -77,63 +166,113 @@ Initial changes:
   - Extracted GameStats helper methods
   - Signal-based item usage system in SlotNode
   - Separated concerns (SlotNode no longer directly accesses PlayerStats)
+  - Resource duplication to prevent shared state bugs in inventory
 - **Node Groups:** Replaced fragile `get_node("../..")` paths with node group lookups
 - **Consistent Naming:** Removed underscore prefix from public API methods
 - **Proper Pausing:** Uses Godot's built-in pause system
+- **Debug Cleanup:** Removed unnecessary print statements throughout codebase
 
 ## TODO
 
 ### High Priority
-- [ ] Item tooltips on hover (In Progress)
-- [ ] Item rarity system
-- [ ] Equipment stat bonuses affecting PlayerStats
-- [ ] Bullet/projectile pooling for performance
-- [ ] Hit effects and feedback (damage numbers, screen shake)
-- [ ] Critical hit system
 - [ ] Mob projectile attacks
-- [ ] Save/load system
+- [ ] Experience/leveling system
+- [ ] More item variety (weapons, armor pieces)
+- [ ] More mob types (ground-based, ranged, etc.)
 
 ### Medium Priority
 - [ ] Health bars above mobs
-- [ ] Player health/mana HUD
+- [ ] Player health/mana HUD improvements
 - [ ] Minimap
 - [ ] Toolbar hotkeys (1-9 to use items)
 - [ ] Item pickup animations
 - [ ] Pathfinding for mob AI
 - [ ] Mob spawning waves/difficulty scaling
+- [ ] Better visual effects for combat
+- [ ] Sound effects and music
+
+### Completed Features
+- [x] Item tooltips on hover
+- [x] Item rarity system
+- [x] Equipment stat bonuses affecting PlayerStats
+- [x] Bullet/projectile pooling for performance
+- [x] Critical hit system with visual feedback
+- [x] Save/load system with multiple save slots
+- [x] Stack splitting and combining
+- [x] Camera shake on critical hits
+- [x] Loot tables for different mob types (randomized drops with rarity)
+- [x] 3D item models for potions
+- [x] Advanced mob AI with flocking and orbiting
+- [x] Swimming/water mechanics
+- [x] Hazard system (water, lava, quicksand, void)
+- [x] Context-aware death messages
+- [x] Mob respawn clearing on player respawn
 
 ### Assets Needed
-- [ ] Player character model
-- [ ] Mob variations
-- [ ] Item models (health potion, armor, weapons)
-- [ ] Environment assets
+- [ ] Player character model with animations
+- [ ] More mob variations (ground enemies, ranged enemies)
+- [ ] Weapon models (swords, bows, staffs)
+- [ ] Armor models (helmets, chest pieces, boots)
+- [ ] Environment assets (trees, rocks, structures)
+- [ ] Water/hazard visual effects
 - [ ] UI/HUD graphics
 
 ## Recent Changes
 
-### Code Refactoring
-- Eliminated code duplication between Ball.gd and GenericItem.gd with PickupItem base class
-- Fixed fragile node paths by using node groups instead of relative paths
-- Removed debug print statements throughout codebase
-- Improved Global.gd naming conventions
-- Extracted duplicate signal emission logic in GameStats.gd
-- Refactored SlotNode to use signals for item usage instead of direct stat manipulation
+### Latest Updates
+- **Mob Architecture Refactor:**
+  - Created base `Mob` class with shared functionality
+  - Specialized `Bat` class with flying/orbiting behavior
+  - Mobs define their own available AI types
+- **Advanced Flying AI:**
+  - Organic orbiting patterns with randomization
+  - Vertical avoidance for 3D navigation
+  - Even distribution around player via preferred angles
+  - Boundary detection to prevent falling off edges
+- **Randomized Loot System:**
+  - LootTable class with percentage-based drops
+  - Configurable quantity ranges
+  - Rarity support (common health potions, rare revive potions)
+- **3D Potion Models:**
+  - Created custom bottle models with glowing effects
+  - Health potion (red) and Revive potion (purple/pink)
+- **Hazard/DeathZone System:**
+  - Four configurable hazard types (Water, Lava, Quicksand, Void)
+  - Unique physics for each hazard type
+  - Buoyancy, drag, and damage systems
+  - Swimming mechanics with enhanced jump in water
+- **Context-Aware Death Messages:**
+  - Death dialog shows different messages based on death cause
+  - Tracks deaths from combat, falling, lava, quicksand
+- **Code Cleanup:**
+  - Removed unused functions across multiple files
+  - Deleted deprecated Mob_old.gd backup file
+  - Fixed signal connection errors
+
+### Previous Updates
+- **Save/Load System:** Complete implementation with 10 save slots, timestamp-based naming, and save management UI
+- **Stack Splitting:** Shift+Click to split item stacks with slider dialog
+- **Stack Combining:** Fixed inventory stacking logic to properly combine compatible items
+- **Critical Hits:** Added visual feedback with "CRIT!" text and camera shake
+- **Object Pooling:** Implemented bullet pooling for better performance
 
 ### Bug Fixes
+- Fixed stack combining showing incorrect counts
+- Fixed stacks not swapping properly with single items
+- Fixed dropped stacks only spawning one item in world
+- Fixed player respawn position to return to level start
 - Fixed player movement not restoring after revival/respawn
-- Fixed inventory drop logic for dropping items outside inventory to world
 - Fixed item type validation in equipment slots
-- Fixed has_property() error (changed to `in` operator)
-- Fixed game pause to properly freeze mobs and projectiles when inventory is open
-
-### New Features
-- Item stacking system with configurable max stack sizes
-- Stack count labels on inventory items
-- Bullet damage system with team collision filtering
-- Death/respawn system with revival items
-- Mob AI with multiple behavior types
-- Mob spawner with configurable settings
-- Proper game pause when inventory is open
+- Fixed game pause to properly freeze mobs and projectiles
+- Fixed mob attacking only triggering once (moved to frame-based checking)
+- Fixed mobs crowding player (tuned separation forces and distances)
+- Fixed mobs floating too high (added height control)
+- Fixed mobs facing wrong direction during orbit
+- Fixed mobs not navigating around each other (added vertical avoidance)
+- Fixed mobs clustering on one side (added preferred orbit angles)
+- Fixed loot being lost when mobs fall off map
+- Fixed player unable to jump out of water
+- Fixed death dialog not showing correct death reason
 
 ## Technical Notes
 

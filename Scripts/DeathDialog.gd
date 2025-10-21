@@ -16,17 +16,32 @@ func _ready() -> void:
 	respawn_button.pressed.connect(_on_respawn_button_pressed)
 	
 func _on_player_died() -> void:
+	var death_message = _get_death_message(PlayerStats.death_reason)
+
 	if PlayerStats.has_revive_item():
-		message_label.text = "OH NO! You died! You have a revive item in your inventory..."
+		message_label.text = death_message + "\nYou have a revive item in your inventory..."
 		revive_button.visible = true
 		revive_button.text = "Use Revive Item"
 	else:
-		message_label.text = "OH NO! You died! You have no revive items available..."
+		message_label.text = death_message + "\nYou have no revive items available..."
 		revive_button.visible = false
-	
+
 	visible = true
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func _get_death_message(reason: String) -> String:
+	match reason:
+		"falling":
+			return "OH NO! You fell off the edge!"
+		"combat":
+			return "OH NO! You were defeated in battle!"
+		"lava":
+			return "OH NO! You burned in lava!"
+		"quicksand":
+			return "OH NO! You were swallowed by quicksand!"
+		_:
+			return "OH NO! You died!"
 
 func _on_revive_button_pressed() -> void:
 	print("REVIVE BUTTON PRESSED...")

@@ -1,10 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://st3sqvn8803"]
+[gd_scene load_steps=4 format=3 uid="uid://st3sqvn8803"]
 
 [ext_resource type="Script" uid="uid://c1ggtyqau4nku" path="res://Scripts/MobSpawner.gd" id="1_6ujug"]
 [ext_resource type="PackedScene" uid="uid://b0y2ohapa1xer" path="res://Characters/Spawner/spawner_model.glb" id="1_ygis3"]
+[ext_resource type="PackedScene" uid="uid://1suubji6u6uw" path="res://Characters/Mob/Mob.tscn" id="2_cg8pf"]
 
 [node name="MobSpawner" type="Node3D"]
 script = ExtResource("1_6ujug")
+mob_to_spawn = ExtResource("2_cg8pf")
 
 [node name="SpawnerModel" parent="." instance=ExtResource("1_ygis3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.99801, 0)

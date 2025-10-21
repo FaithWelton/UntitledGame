@@ -8,14 +8,6 @@ const MIN_ENEMIES: int = 0
 @export_group("Current Stats")
 @export var live_enemies: int = 0
 
-func update_ui_stats(stats: Dictionary) -> void:
-	live_enemies = stats.get("live_enemies", 0)
-	stats_updated.emit(get_current_stats())
-
-func update_live_enemy_count(count: int) -> void:
-	live_enemies = count
-	_emit_stat_changes()
-
 func increment_live_enemies() -> void:
 	live_enemies += 1
 	_emit_stat_changes()

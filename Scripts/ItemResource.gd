@@ -28,6 +28,8 @@ enum Rarity {
 @export var health: int = 0
 @export var strength: int = 0
 @export var armor: int = 0
+@export var crit_chance: float = 0.0  # Bonus crit chance (0.0 to 1.0)
+@export var crit_multiplier: float = 0.0  # Bonus crit damage multiplier
 
 @export_group("Inventory Data")
 @export var inv_slot: String = ""
@@ -55,8 +57,9 @@ func can_stack_with(other: Item) -> bool:
 	if not other or not is_stackable():
 		return false
 
-	# Items can stack if they have the same resource path
-	return resource_path == other.resource_path
+	# Items can stack if they have the same name and type
+	# (resource_path gets lost when duplicating, so we use name/type instead)
+	return name == other.name and type == other.type
 
 func add_to_stack(amount: int) -> int:
 	var space_available = max_stack_size - stack_size

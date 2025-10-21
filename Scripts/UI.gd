@@ -11,8 +11,6 @@ func _ready() -> void:
 	GameStats.stats_updated.connect(_on_stats_updated)
 
 	PlayerStats.health_changed.connect(_on_player_health_changed)
-	PlayerStats.strength_changed.connect(_on_player_strength_changed)
-	PlayerStats.armor_changed.connect(_on_player_armor_changed)
 	PlayerStats.stats_updated.connect(_on_player_stats_updated)
 
 	# Defer finding bullet pool to ensure scene tree is ready
@@ -62,14 +60,6 @@ func _on_player_health_changed(new_health: int) -> void:
 	print("Player health changed to: ", new_health)
 	if player_health_label:
 		player_health_label.text = "Player Health: %d/%d" % [new_health, PlayerStats.max_health]
-
-func _on_player_strength_changed(new_strength: int) -> void:
-	print("Player strength changed to: ", new_strength)
-	#TODO: UI Component for displaying strength
-
-func _on_player_armor_changed(new_armor: int) -> void:
-	print("Player armor changed to: ", new_armor)
-	#TODO: UI Component for displaying armor
 
 func _on_player_stats_updated(stats: Dictionary) -> void:
 	print("Player Stats Updated: ", stats)

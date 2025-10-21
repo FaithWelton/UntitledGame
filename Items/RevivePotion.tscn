@@ -1,0 +1,66 @@
+[gd_scene load_steps=9 format=3 uid="uid://28xsa3jj8eje"]
+
+[ext_resource type="Script" path="res://Scripts/Items/RevivePotion.gd" id="1_script"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_collision"]
+height = 0.5
+radius = 0.15
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+top_radius = 0.15
+bottom_radius = 0.15
+height = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
+transparency = 1
+albedo_color = Color(0.8, 0.4, 1, 0.6)
+metallic = 0.2
+roughness = 0.1
+emission_enabled = true
+emission = Color(1, 0.5, 1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_neck"]
+top_radius = 0.05
+bottom_radius = 0.08
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_neck"]
+albedo_color = Color(0.9, 0.8, 0.4, 1)
+metallic = 0.5
+roughness = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_cork"]
+radius = 0.06
+height = 0.08
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cork"]
+albedo_color = Color(0.6, 0.45, 0.2, 1)
+roughness = 0.9
+
+[node name="RevivePotion" type="RigidBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_collision")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+text = "E"
+font_size = 70
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("CylinderMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_glass")
+
+[node name="Neck" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("CylinderMesh_neck")
+surface_material_override/0 = SubResource("StandardMaterial3D_neck")
+
+[node name="Cork" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+mesh = SubResource("SphereMesh_cork")
+surface_material_override/0 = SubResource("StandardMaterial3D_cork")

@@ -12,16 +12,21 @@ func _ready() -> void:
 	no_depth_test = true
 	modulate = Color.WHITE
 
-func initialize(damage_amount: int, position: Vector3, is_critical: bool = false) -> void:
-	text = str(damage_amount)
-	global_position = position
+func initialize(damage_amount: int, spawn_position: Vector3, is_critical: bool = false) -> void:
+	global_position = spawn_position
 
 	if is_critical:
-		modulate = Color(1.0, 0.5, 0.0)  # Orange for crits
-		font_size = 100
+		text = "CRIT! " + str(damage_amount)
+		modulate = Color(1.0, 0.3, 0.0)  # Bright orange for crits
+		font_size = 120
+		outline_size = 8
+		outline_modulate = Color.BLACK
 	else:
+		text = str(damage_amount)
 		modulate = Color.WHITE
 		font_size = 50
+		outline_size = 4
+		outline_modulate = Color.BLACK
 
 func _process(delta: float) -> void:
 	elapsed_time += delta

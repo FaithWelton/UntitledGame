@@ -12,7 +12,7 @@ const RANDOM_OFFSET_RANGE: float = 0.5
 @onready var trash: MarginContainer = $Trash
 
 @onready var health_label: Label = $PlayerStatsLabel/Health
-@onready var ui_health_label: Label = $"../PlayerStatsLabel/Health"
+@onready var ui_health_label: Label = $"../Stats/Health"
 @onready var strength_label: Label = $PlayerStatsLabel/Strength
 @onready var armor_label: Label = $PlayerStatsLabel/Armor
 
@@ -82,7 +82,6 @@ func _find_player() -> void:
 	var players = get_tree().get_nodes_in_group("player")
 
 	if players.is_empty():
-		push_warning("No player found yet in 'player' group - will retry when needed")
 		return
 
 	player = players[0]
@@ -153,11 +152,13 @@ func add_item(item: Item, preferred_slot: String = "Backpack") -> bool:
 	if not _validate_item(item):
 		return false
 
+	# Always duplicate the item to avoid shared resources
+	var item_copy = item.duplicate(true)
+
 	# Try to stack with existing items first
-	if item.is_stackable():
-		var stacked_slot = _try_stack_item(item, preferred_slot)
+	if item_copy.is_stackable():
+		var stacked_slot = _try_stack_item(item_copy, preferred_slot)
 		if stacked_slot:
-			print("Stacked Item: " + item.name + " in " + preferred_slot)
 			_refresh_player_stats()
 			return true
 
@@ -168,13 +169,12 @@ func add_item(item: Item, preferred_slot: String = "Backpack") -> bool:
 		return false
 
 	# Initialize stack size if not set
-	if item.stack_size <= 0:
-		item.stack_size = 1
+	if item_copy.stack_size <= 0:
+		item_copy.stack_size = 1
 
-	slot_node.set_new_data(item)
+	slot_node.set_new_data(item_copy)
 	_refresh_player_stats()
 
-	print("Added Item: " + item.name + " to " + preferred_slot)
 	return true
 
 func _try_stack_item(item: Item, preferred_slot: String) -> SlotNode:
@@ -232,7 +232,13 @@ func _refresh_player_stats() -> void:
 	_update_stat_labels()
 
 func _calculate_equipment_bonuses() -> Dictionary:
-	var bonuses = { "health": 0, "strength": 0, "armor": 0 }
+	var bonuses = {
+		"health": 0,
+		"strength": 0,
+		"armor": 0,
+		"crit_chance": 0.0,
+		"crit_multiplier": 0.0
+	}
 	var equipment_slots = equip_left.get_children() + equip_right.get_children()
 
 	for slot in equipment_slots:
@@ -243,6 +249,8 @@ func _calculate_equipment_bonuses() -> Dictionary:
 		bonuses.health += item.health
 		bonuses.strength += item.strength
 		bonuses.armor += item.armor
+		bonuses.crit_chance += item.crit_chance
+		bonuses.crit_multiplier += item.crit_multiplier
 
 	return bonuses
 
@@ -260,19 +268,39 @@ func remove_item(item_slot_node: Node) -> bool:
 	if not item_slot_node or not item_slot_node.item_resource:
 		push_error("Cannot remove invalid item")
 		return false
-		
-	var item_name = item_slot_node.item_resource.name
-	print("Removed item: " + item_name)
-	
+
 	item_slot_node.delete_resource()
 	_refresh_player_stats()
 	return true
+
+func clear_inventory() -> void:
+	# Clear all backpack slots
+	for slot in backpack.get_children():
+		if slot.item_resource:
+			slot.delete_resource()
+
+	# Clear all left equipment slots
+	for slot in equip_left.get_children():
+		if slot.item_resource:
+			slot.delete_resource()
+
+	# Clear all right equipment slots
+	for slot in equip_right.get_children():
+		if slot.item_resource:
+			slot.delete_resource()
+
+	_refresh_player_stats()
 
 func _get_drag_data(at_position: Vector2) -> Variant:
 	var drag_slot_node = get_slot_node_at_position(at_position)
 
 	if not drag_slot_node or not drag_slot_node.texture:
 		currently_dragging_slot = null
+		return null
+
+	# Check for shift key to split stack
+	if Input.is_key_pressed(KEY_SHIFT) and drag_slot_node.item_resource and drag_slot_node.item_resource.is_stackable() and drag_slot_node.item_resource.stack_size > 1:
+		_show_stack_split_dialog(drag_slot_node)
 		return null
 
 	var drag_preview_node = drag_slot_node.duplicate()
@@ -348,19 +376,153 @@ func _handle_trash_drop(drag_slot_node: Node) -> void:
 	trash.deactivate_swirl()
 
 func _handle_world_drop(drag_slot_node: Node) -> void:
-	if _spawn_3d_item(drag_slot_node.item_resource):
-		remove_item(drag_slot_node)
+	var item = drag_slot_node.item_resource
+	if not item:
+		return
+
+	# Spawn items based on stack size
+	var stack_size = item.stack_size if item.is_stackable() else 1
+
+	for i in range(stack_size):
+		# Create a single item (stack_size = 1) for each drop
+		var single_item = item.duplicate(true)
+		single_item.stack_size = 1
+
+		if not _spawn_3d_item(single_item):
+			push_error("Failed to spawn item %d of %d" % [i + 1, stack_size])
+			break
+
+	# Remove the entire stack from inventory
+	remove_item(drag_slot_node)
 
 func _handle_slot_drop(at_position: Vector2, drag_slot_node: Node) -> void:
 	var target_slot_node = get_slot_node_at_position(at_position)
 	if not target_slot_node:
 		return
-	
+
 	var target_item = target_slot_node.item_resource
 	var drag_item = drag_slot_node.item_resource
-	
-	target_slot_node.set_new_data(drag_item)
-	drag_slot_node.set_new_data(target_item)
+
+	# Check if we should try to stack
+	var should_stack = (drag_item and target_item
+		and drag_item.can_stack_with(target_item)
+		and not drag_item == target_item
+		and not target_item.is_stack_full())
+
+	if should_stack:
+		var amount_to_add = drag_item.stack_size
+		var space_available = target_item.max_stack_size - target_item.stack_size
+		var amount_actually_added = min(amount_to_add, space_available)
+
+		# Add to target stack
+		target_item.stack_size += amount_actually_added
+		target_slot_node._update_stack_display()
+
+		# Update source stack
+		var remaining = amount_to_add - amount_actually_added
+		if remaining == 0:
+			# All items stacked, clear source slot
+			drag_slot_node.delete_resource()
+		else:
+			# Partial stack, update source slot with remaining
+			drag_item.stack_size = remaining
+			drag_slot_node._update_stack_display()
+	else:
+		# Normal swap - need to duplicate to avoid shared resources
+		var drag_item_copy = drag_item.duplicate(true) if drag_item else null
+		var target_item_copy = target_item.duplicate(true) if target_item else null
+
+		target_slot_node.set_new_data(drag_item_copy)
+		drag_slot_node.set_new_data(target_item_copy)
+
+func _show_stack_split_dialog(source_slot: Node) -> void:
+	var item = source_slot.item_resource
+	if not item:
+		return
+
+	var dialog = AcceptDialog.new()
+	dialog.title = "Split Stack"
+	dialog.dialog_text = ""  # Clear default text to avoid overlap
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+
+	var title_label = Label.new()
+	title_label.text = "How many %s to take?" % item.name
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	var stack_label = Label.new()
+	stack_label.text = "Current stack: %d" % item.stack_size
+	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stack_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+
+	vbox.add_child(title_label)
+	vbox.add_child(stack_label)
+
+	var slider = HSlider.new()
+	slider.min_value = 1
+	slider.max_value = item.stack_size - 1
+	slider.value = floor(item.stack_size / 2.0)
+	slider.step = 1
+	slider.custom_minimum_size = Vector2(300, 0)
+
+	var amount_label = Label.new()
+	amount_label.text = "Amount: %d" % slider.value
+	amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	slider.value_changed.connect(func(value):
+		amount_label.text = "Amount: %d" % int(value)
+	)
+
+	vbox.add_child(amount_label)
+	vbox.add_child(slider)
+
+	dialog.add_child(vbox)
+	add_child(dialog)
+	dialog.popup_centered()
+
+	dialog.confirmed.connect(func():
+		_split_stack(source_slot, int(slider.value))
+		dialog.queue_free()
+	)
+
+	dialog.canceled.connect(func():
+		dialog.queue_free()
+	)
+
+func _split_stack(source_slot: Node, amount: int) -> void:
+	var source_item = source_slot.item_resource
+	if not source_item or amount <= 0 or amount >= source_item.stack_size:
+		return
+
+	# Find empty slot in same section as source
+	var section_name = _get_slot_section_name(source_slot)
+	var empty_slot = _get_next_empty_slot_node(section_name)
+
+	if not empty_slot:
+		push_warning("No empty slot to split stack into")
+		return
+
+	# Create duplicate item for new stack
+	var new_item = source_item.duplicate(true)
+	new_item.stack_size = amount
+
+	# Reduce source stack
+	source_item.stack_size -= amount
+
+	# Update displays
+	source_slot._update_stack_display()
+	empty_slot.set_new_data(new_item)
+
+func _get_slot_section_name(slot: Node) -> String:
+	# Find which section this slot belongs to
+	if slot.get_parent() == backpack:
+		return "Backpack"
+	elif slot.get_parent() == equip_left:
+		return "EquipLeft"
+	elif slot.get_parent() == equip_right:
+		return "EquipRight"
+	return "Backpack"
 
 func _spawn_3d_item(item_resource: Item) -> bool:
 	if not item_resource:
@@ -396,13 +558,13 @@ func _calculate_spawn_position() -> Vector3:
 	
 	return base_position + random_offset
 
-func get_slot_node_at_position(position: Vector2) -> Variant:
+func get_slot_node_at_position(at_position: Vector2) -> Variant:
 	var all_slots = _get_all_inventory_slots()
-	
+
 	for slot in all_slots:
-		if slot.get_global_rect().has_point(position):
+		if slot.get_global_rect().has_point(at_position):
 			return slot
-	
+
 	return null
 
 func _get_all_inventory_slots() -> Array[Node]:
@@ -413,8 +575,8 @@ func _get_all_inventory_slots() -> Array[Node]:
 	
 	return all_slots
 
-func _is_over_trash(position: Vector2) -> bool:
-	return trash.get_global_rect().has_point(position)
+func _is_over_trash(at_position: Vector2) -> bool:
+	return trash.get_global_rect().has_point(at_position)
 
 func _is_item_allowed_in_slot(item: Item, slot_node: Node) -> bool:
 	if not item or not slot_node:
@@ -495,13 +657,6 @@ func _handle_drink_item(item: Item, slot: SlotNode) -> void:
 		slot.decrement_stack()
 		_refresh_player_stats()
 		print("Player drank: " + item.name + " (+%d health)" % item.health)
-
-func _on_texture_rect_mouse_entered() -> void:
-	is_inventory_open = true
-
-func _on_texture_rect_mouse_exited() -> void:
-	is_inventory_open = false
-
 func _on_player_health_changed(new_health: int) -> void:
 	if ui_health_label:
 		ui_health_label.text = "Player Health: %d/%d" % [new_health, PlayerStats.max_health]

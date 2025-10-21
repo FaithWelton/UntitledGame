@@ -6,8 +6,6 @@ extends Node3D
 @onready var marker: Marker3D = %Marker3D
 @onready var timer: Timer = %Timer
 
-var ai_types = ["aggressive", "hit_and_run", "coward"]
-
 func _ready() -> void:
 	if not mob_to_spawn:
 		push_error("No Mob Scene assigned to MobSpawner")
@@ -29,9 +27,8 @@ func _on_timer_timeout() -> void:
 		push_error("Spawned mob is not a valid mob")
 		mob.queue_free()
 		return
-	
-	mob.ai_type = ai_types.pick_random()
-	
+
+	# Mob determines its own AI type based on its available types
 	var scene_name = mob_to_spawn.resource_path.get_file().get_basename()
 	mob.name = scene_name + "_" + mob.ai_type + "_" + str(randi() % 1000)
 	

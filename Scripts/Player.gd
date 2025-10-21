@@ -25,6 +25,8 @@ var objects_in_range: Array[Node3D] = []
 var camera_rotation: Vector2 = Vector2.ZERO
 var hit_flash_timer: float = 0.0
 var previous_health: int = 0
+var spawn_position: Vector3
+var spawn_rotation: float
 
 func _ready() -> void:
 	add_to_group("player")
@@ -33,6 +35,10 @@ func _ready() -> void:
 	_initialize_player()
 	_setup_spring_arm()
 	capture_mouse()
+
+	# Store spawn position
+	spawn_position = global_position
+	spawn_rotation = rotation.y
 
 	PlayerStats.player_revived.connect(_revive)
 	PlayerStats.player_respawned.connect(_respawn)
@@ -51,7 +57,6 @@ func _find_player_meshes() -> void:
 	for child in get_children():
 		if child is MeshInstance3D:
 			player_meshes.append(child)
-			print("Found player mesh: ", child.name)
 
 			# Store the original color from the material
 			var material = child.get_surface_override_material(0)
@@ -60,11 +65,9 @@ func _find_player_meshes() -> void:
 
 			if material and material is BaseMaterial3D:
 				original_mesh_colors[child.name] = material.albedo_color
-				print("  Stored original color for ", child.name, ": ", material.albedo_color)
 			else:
 				# Default to white if no material
 				original_mesh_colors[child.name] = Color.WHITE
-				print("  No material, defaulting to white for ", child.name)
 
 func _find_inventory() -> void:
 	var inventories = get_tree().get_nodes_in_group("inventory")
@@ -281,7 +284,7 @@ func shoot_bullet() -> void:
 	if not bullet:
 		return
 
-	var bullet_damage = max(10, PlayerStats.strength / 5)
+	var bullet_damage = max(10, int(PlayerStats.strength / 5.0))
 	bullet.initialize(self, bullet_damage, bullet_pool)
 
 	shoot_timer.start()
@@ -292,10 +295,8 @@ func _physics_process(delta) -> void:
 
 func _flash_damage() -> void:
 	if player_meshes.is_empty():
-		print("No player meshes found for damage flash!")
 		return
 
-	print("Flashing red!")
 	hit_flash_timer = 0.2  # Flash duration
 	_set_player_color(Color.RED)
 
@@ -306,50 +307,34 @@ func _update_damage_flash(delta: float) -> void:
 			_restore_original_colors()
 
 func _set_player_color(color: Color) -> void:
-	print("Setting all meshes to color: ", color)
 	for mesh_instance in player_meshes:
 		_set_mesh_color(mesh_instance, color)
 
 func _set_mesh_color(mesh_instance: MeshInstance3D, color: Color) -> void:
 	if not mesh_instance or not mesh_instance.mesh:
-		print("Skipping invalid mesh")
 		return
 
-	print("Processing mesh: ", mesh_instance.name)
-	print("  Surface count: ", mesh_instance.mesh.get_surface_count())
-
 	var material = mesh_instance.get_surface_override_material(0)
-	print("  Override material: ", material)
 
 	if not material:
 		material = mesh_instance.mesh.surface_get_material(0)
-		print("  Base material: ", material)
 		if material:
 			material = material.duplicate()
 			mesh_instance.set_surface_override_material(0, material)
-			print("  Created material duplicate for: ", mesh_instance.name)
 		else:
-			print("  No material found for: ", mesh_instance.name)
 			return
 
 	if material:
 		# Try StandardMaterial3D
 		if material is StandardMaterial3D:
 			material.albedo_color = color
-			print("Set StandardMaterial3D color for: ", mesh_instance.name)
 		# Try BaseMaterial3D (parent class)
 		elif material is BaseMaterial3D:
 			material.albedo_color = color
-			print("Set BaseMaterial3D color for: ", mesh_instance.name)
 		# Try ShaderMaterial
 		elif material is ShaderMaterial:
 			if material.shader and material.shader.has_param("albedo"):
 				material.set_shader_parameter("albedo", color)
-				print("Set ShaderMaterial color for: ", mesh_instance.name)
-			else:
-				print("ShaderMaterial doesn't have albedo param for: ", mesh_instance.name)
-		else:
-			print("Unknown material type for ", mesh_instance.name, ": ", material.get_class())
 
 func _handle_movement(delta) -> void:
 	if PlayerStats.dead:
@@ -375,8 +360,12 @@ func _handle_movement(delta) -> void:
 	if Input.is_action_pressed("move_right"):
 		input_vector.x += 1
 		
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = sqrt(jump_height * -3.0 * gravity_value)
+	if Input.is_action_just_pressed("jump"):
+		if is_on_floor():
+			velocity.y = sqrt(jump_height * -3.0 * gravity_value)
+		elif in_water:
+			# Allow jumping/swimming out of water with strong upward force
+			velocity.y = sqrt(jump_height * -5.0 * gravity_value)
 	
 	input_vector = input_vector.normalized()
 	
@@ -398,30 +387,88 @@ func _handle_movement(delta) -> void:
 	
 	move_and_slide()
 
-func take_damage(amount: int) -> void:	
+func take_damage(amount: int, reason: String = "combat") -> void:
 	if PlayerStats.dead: # Exit early if already dead
 		return
-	
-	#player.hurt() # TODO: Create Hurt Animation for Player
-	PlayerStats.decrement_health(amount)
-	
+
+	PlayerStats.decrement_health(amount, reason)
+
 	if PlayerStats.dead:
 		_die()
 
+var died_from_falling: bool = false
+var in_water: bool = false
+
+func die_from_falling() -> void:
+	# Special death handler for falling off the map
+	if PlayerStats.dead:
+		return
+
+	print("Player died from falling off the map!")
+	died_from_falling = true
+	# Use decrement_health to trigger death properly (sets dead=true and emits player_died signal)
+	PlayerStats.decrement_health(PlayerStats.health, "falling")
+	_die()
+
 func _die() -> void:
 	set_physics_process(false)
-	# TODO: Play Death Animation
-	# TODO: Change Player Appearance to Dead
 
 func _revive() -> void:
+	# If player died from falling, teleport them to a safe position first
+	if died_from_falling:
+		# Move player toward center and ensure they're on the platform
+		var safe_pos = global_position
+		safe_pos.y = 1.0
+
+		# If player is far from center, move them closer to center
+		var distance_from_center = Vector2(safe_pos.x, safe_pos.z).length()
+		if distance_from_center > 20.0:
+			# Move them to a safe distance from center
+			var direction_to_center = Vector2(-safe_pos.x, -safe_pos.z).normalized()
+			safe_pos.x = direction_to_center.x * 15.0
+			safe_pos.z = direction_to_center.y * 15.0
+
+		global_position = safe_pos
+		velocity = Vector3.ZERO
+		died_from_falling = false
+
 	set_physics_process(true)
 	_restore_original_colors()
 	# TODO: Play Revival Animation
 
 func _respawn() -> void:
+	# Teleport to spawn position
+	global_position = spawn_position
+	rotation.y = spawn_rotation
+	velocity = Vector3.ZERO
+
+	# Clear all enemies
+	_clear_all_enemies()
+
 	set_physics_process(true)
 	_restore_original_colors()
 	# TODO: Play Respawn Animation
+
+func _clear_all_enemies() -> void:
+	# Remove all mobs from the scene
+	var mobs = get_tree().get_nodes_in_group("mob")
+	for mob in mobs:
+		if is_instance_valid(mob):
+			mob.queue_free()
+
+	# Reset enemy counter
+	GameStats.live_enemies = 0
+	GameStats.stats_updated.emit(GameStats.get_current_stats())
+
+func enter_water() -> void:
+	in_water = true
+	print("Player is now swimming!")
+	# Could add swimming animation trigger here
+
+func exit_water() -> void:
+	in_water = false
+	print("Player exited water!")
+	# Could restore normal animation here
 
 func _restore_original_colors() -> void:
 	for mesh_instance in player_meshes:
@@ -429,7 +476,6 @@ func _restore_original_colors() -> void:
 		_set_mesh_color(mesh_instance, original_color)
 
 func _on_player_died() -> void:
-	print("Player died - setting dead color")
 	_set_player_color(Color(0.3, 0.35, 0.3))  # Dark grayish-green for dead/decomposing look
 
 func _on_interaction_area_body_entered(body: Node3D) -> void:
